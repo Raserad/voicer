@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/colorBackground"
+              android:padding="20dp"
+              android:clickable="true"
+              android:focusable="true">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorTextLight"
+            android:text="Создание проекта по озвучке"/>
+
+    <Space android:layout_width="wrap_content" android:layout_height="20dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/titleHintView"
+            android:layout_width="match_parent"
+            android:textColorHint="@color/colorTextLight"
+            android:layout_height="wrap_content">
+
+        <EditText
+                android:id="@+id/titleView"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="1"
+                android:singleLine="true"
+                android:textColor="@color/colorTextLight"
+                app:backgroundTint="@color/colorTextLight"
+                android:hint="Название *" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Space android:layout_width="wrap_content" android:layout_height="20dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/descriptionHintView"
+            android:layout_width="match_parent"
+            android:textColorHint="@color/colorTextLight"
+            android:layout_height="wrap_content">
+
+        <EditText
+                android:id="@+id/descriptionView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorTextLight"
+                app:backgroundTint="@color/colorTextLight"
+                android:hint="Описание" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Space android:layout_width="wrap_content" android:layout_height="20dp"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end">
+
+        <TextView
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:text="Отмена"/>
+
+        <Space android:layout_width="20dp" android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/okButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:text="Создать"/>
+
+    </LinearLayout>
+
+</LinearLayout>

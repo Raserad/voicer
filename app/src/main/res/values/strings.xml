@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Voicer</string>
+    <string name="project_removed_notification">Проект удален</string>
+    <string name="project_removed_cancel">Отменить</string>
+    <string name="project_create_choose_video">Выберите видео</string>
+    <string name="create_project_video_empty">К сожалению на устройстве нет видео для озвучки</string>
+    <string name="project_list_empty">Нажмите + чтобы озвучить новое видео</string>
+    <string name="title_data">data</string>
+    <string name="title_need_file_read_permission">Приложению необходимо разрещение на чтение файлов</string>
+    <string name="description_need_file_read_permission">Это нужно для того чтобы приложение могло загрузить список
+        видеофайлов
+    </string>
+    <string name="cancel_file_need_permission">Отмена</string>
+    <string name="confirm_file_need_permission">Ok</string>
+    <string name="sound_permission_title">Приложению необходимо разрешение на запись аудио</string>
+    <string name="sound_permission_description">Это нужно для того чтобы приложение имело вохможность озвучивать видео
+    </string>
+    <string name="sound_record_remove">Звуковая дорожка была удалена</string>
+</resources>

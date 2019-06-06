@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true">
+
+    <RelativeLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_margin="5dp"
+            android:background="@color/darkBackground">
+
+        <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <RelativeLayout
+                android:id="@+id/selectedMask"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorDarkTransparent">
+            <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/ic_done_light"
+                    android:tint="@color/colorPrimary"/>
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

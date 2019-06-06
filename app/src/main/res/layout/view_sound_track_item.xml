@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@color/darkBackground"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true">
+
+    <LinearLayout
+            android:id="@+id/soundTack"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/colorPrimary"/>
+
+    <RelativeLayout
+            android:id="@+id/disabledMask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorDarkTransparent"
+            android:visibility="gone"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|end">
+
+        <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView
+                    android:id="@+id/enableButton"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:visibility="gone"
+                    android:src="@drawable/ic_volume_up"/>
+            <ImageView
+                    android:id="@+id/disableButton"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_volume_off"
+                    app:tint="@color/colorTextLight"/>
+        </RelativeLayout>
+
+        <Space
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:id="@+id/deleteButton"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:src="@drawable/ic_delete_light"/>
+
+        <Space
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</RelativeLayout>
