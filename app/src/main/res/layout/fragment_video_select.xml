@@ -66,13 +66,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="60dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-        <RelativeLayout
-                android:visibility="visible"
-                android:id="@+id/videoTrimmerParent"
-                android:layout_width="300dp"
-                android:layout_height="match_parent"/>
+        <com.raserad.videoutils.RaseradVideoTrimmer
+                android:visibility="gone"
+                android:id="@+id/videoTrimmer"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"/>
 
         <RelativeLayout
                 android:layout_width="match_parent"

@@ -78,7 +78,7 @@
                                 android:padding="5dp"/>
 
                         <Space
-                                android:layout_width="50dp"
+                                android:layout_width="40dp"
                                 android:layout_height="wrap_content"/>
 
                         <ImageView

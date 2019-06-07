@@ -48,7 +48,6 @@ class RangeSeekBarView @JvmOverloads constructor(context: Context, attrs: Attrib
     var thumbs: List<Thumb>? = null
         private set
     private var mListeners: MutableList<OnRangeSeekBarListener>? = null
-    private var mMaxWidth: Float = 0.toFloat()
     private var mThumbWidth: Float = 0.toFloat()
     private var mThumbHeight: Float = 0.toFloat()
     private var mViewWidth: Int = 0
@@ -91,8 +90,6 @@ class RangeSeekBarView @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     fun initMaxWidth() {
-        mMaxWidth = thumbs!![1].pos - thumbs!![0].pos
-
         onSeekStop(this, 0, thumbs!![0].value)
         onSeekStop(this, 1, thumbs!![1].value)
     }
@@ -207,17 +204,7 @@ class RangeSeekBarView @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun checkPositionThumb(mThumbLeft: Thumb, mThumbRight: Thumb, dx: Float, isLeftMove: Boolean) {
-        if (isLeftMove && dx < 0) {
-            if (mThumbRight.pos - (mThumbLeft.pos + dx) > mMaxWidth) {
-                mThumbRight.pos = mThumbLeft.pos + dx + mMaxWidth
-                setThumbPos(1, mThumbRight.pos)
-            }
-        } else if (!isLeftMove && dx > 0) {
-            if (mThumbRight.pos + dx - mThumbLeft.pos > mMaxWidth) {
-                mThumbLeft.pos = mThumbRight.pos + dx - mMaxWidth
-                setThumbPos(0, mThumbLeft.pos)
-            }
-        }
+
     }
 
     private fun getUnstuckFrom(index: Int): Int {

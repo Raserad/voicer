@@ -10,8 +10,8 @@ class SoundRecordInteractor(
         soundRecordRepository.startRecording(generateId(), time)
     }
 
-    fun stopRecording(time: Long) {
-        soundRecordRepository.stopRecording(time)
+    fun stopRecording(time: Long, totalTime: Long) {
+        soundRecordRepository.stopRecording(time, totalTime)
         val record = soundRecordRepository.getResultRecord()
         if(record != null) {
             soundRecordRepository.notifyRecordingListener(record)

@@ -10,5 +10,5 @@ interface SoundRepository {
 
     fun addToProject(project: Project, soundRecord: SoundRecord)
 
-    fun enableInProject(project: Project, soundRecord: SoundRecord, isDisabled: Boolean)
+    fun enableInProject(project: Project, soundRecord: SoundRecord, isEnabled: Boolean)
 }

@@ -75,22 +75,8 @@ class RaseradVideoPlayer @JvmOverloads constructor(context: Context, attrs: Attr
         return mVideoView!!.currentPosition
     }
 
-    fun showVideoAfterRecording() {
-        mSrc = Uri.parse(mSrc!!.path)
-
-        mMessageHandler.sendEmptyMessage(SHOW_PROGRESS)
-
-        val duration = (mDuration * mHolderTopView!!.progress / 1000L)
-
-        mVideoView!!.setVideoURI(mSrc)
-
-        mVideoView!!.seekTo(duration)
-        setTimeVideo(duration)
-        if (isPlayingVideo) {
-            mPlayView!!.visibility = View.GONE
-            mVideoView!!.start()
-        }
-        updateProgress(false)
+    fun isPlaying(): Boolean {
+        return mVideoView!!.isPlaying
     }
 
     fun totalTime(): Long {
@@ -172,32 +158,12 @@ class RaseradVideoPlayer @JvmOverloads constructor(context: Context, attrs: Attr
 
         mHolderTopView!!.setOnSeekBarChangeListener(this)
 
-        mVideoView!!.setOnPreparedListener {
-            val videoWidth = mVideoView!!.width
-            val videoHeight = mVideoView!!.height
-            val videoProportion = videoWidth.toFloat() / videoHeight.toFloat()
-            val screenWidth = mLinearVideo!!.width
-            val screenHeight = mLinearVideo!!.height
-            val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
-            val lp = mVideoView!!.layoutParams
-
-            if (videoProportion > screenProportion) {
-                lp.width = screenWidth
-                lp.height = (screenWidth.toFloat() / videoProportion).toInt()
-            } else {
-                lp.width = (videoProportion * screenHeight.toFloat()).toInt()
-                lp.height = screenHeight
-            }
-            mVideoView!!.layoutParams = lp
-
-            mPlayView!!.visibility = View.VISIBLE
-
-            mDuration = mVideoView!!.duration
-            setSeekBarPosition()
-            setTimeVideo(0)
-        }
         mVideoView!!.setOnCompletionListener {
             mVideoView?.restart()
+            mVideoView?.seekTo(0)
+            pauseVideo()
+            setTimeVideo(0)
+            setProgressBarPosition(0)
             videoFinishListener?.invoke()
         }
         mVideoView!!.setOnErrorListener {
@@ -212,13 +178,47 @@ class RaseradVideoPlayer @JvmOverloads constructor(context: Context, attrs: Attr
         setDefaultDestinationPath()
     }
 
+    private fun preparePlayer() {
+        val videoWidth = mVideoView!!.width
+        val videoHeight = mVideoView!!.height
+        val videoProportion = videoWidth.toFloat() / videoHeight.toFloat()
+        val screenWidth = mLinearVideo!!.width
+        val screenHeight = mLinearVideo!!.height
+        val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
+        val lp = mVideoView!!.layoutParams
+
+        if (videoProportion > screenProportion) {
+            lp.width = screenWidth
+            lp.height = (screenWidth.toFloat() / videoProportion).toInt()
+        } else {
+            lp.width = (videoProportion * screenHeight.toFloat()).toInt()
+            lp.height = screenHeight
+        }
+        mVideoView!!.layoutParams = lp
+
+        mPlayView!!.visibility = View.VISIBLE
+
+        mDuration = mVideoView!!.duration
+        setSeekBarPosition()
+        setTimeVideo(0)
+    }
+
     fun setVideoURI(videoURI: Uri) {
+        if(mSrc != null) {
+            if(mSrc!!.path == videoURI.path) {
+                return
+            }
+        }
         mSrc = videoURI
 
         mVideoView!!.setVideoURI(mSrc)
         mVideoView!!.requestFocus()
 
         mTimeLineView!!.setVideo(mSrc!!)
+
+        mVideoView?.setOnPreparedListener {
+            preparePlayer()
+        }
     }
 
     private fun setDefaultDestinationPath() {
@@ -285,9 +285,37 @@ class RaseradVideoPlayer @JvmOverloads constructor(context: Context, attrs: Attr
         initialLength = (mEndPosition - mStartPosition) / 1000
     }
 
+    fun setPlayingState(path: String, time: Long, isPlaying: Boolean) {
+        setVideoURI(Uri.parse(path))
+        mVideoView!!.setOnPreparedListener {
+            preparePlayer()
+            mVideoView?.seekTo(time)
+            setProgressBarPosition(time)
+            if(isPlaying) {
+                playVideo()
+            }
+            else {
+                pauseVideo()
+            }
+            mVideoView?.setOnPreparedListener {}
+        }
+
+    }
     private fun pauseVideo() {
+        mMessageHandler.removeMessages(SHOW_PROGRESS)
         mPlayView!!.visibility = View.VISIBLE
         mVideoView!!.pause()
+    }
+
+    fun getPath(): String {
+        return mSrc!!.path!!
+    }
+
+    private fun playVideo() {
+        mPlayView!!.visibility = View.GONE
+
+        mMessageHandler.sendEmptyMessage(SHOW_PROGRESS)
+        mVideoView!!.start()
     }
 
 

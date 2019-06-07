@@ -9,5 +9,6 @@ open class SoundRecordObject: RealmObject() {
     var path = ""
     var start = 0L
     var end = 0L
+    var total = 0L
     var isEnabled = false
 }

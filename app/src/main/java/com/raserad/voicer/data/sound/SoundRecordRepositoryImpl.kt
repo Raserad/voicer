@@ -28,7 +28,7 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
 
         val soundPath = projectsDirectory.path + "/" + System.currentTimeMillis() + ".aac"
 
-        currentSoundRecord = SoundRecord(id, soundPath, time, 0, true)
+        currentSoundRecord = SoundRecord(id, soundPath, time, 0, 0, true)
 
         mediaRecorder?.setOutputFile(soundPath)
 
@@ -36,7 +36,7 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
         mediaRecorder?.start()
     }
 
-    override fun stopRecording(time: Long) {
+    override fun stopRecording(time: Long, totalTime: Long) {
         if(mediaRecorder == null) {
             return
         }
@@ -44,6 +44,7 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
             mediaRecorder?.stop()
             mediaRecorder?.release()
             currentSoundRecord?.end = time
+            currentSoundRecord?.total = totalTime
         } catch (stopException: RuntimeException) {
             val soundFile = File(currentSoundRecord?.path)
             soundFile.delete()

@@ -5,12 +5,14 @@ import com.raserad.voicer.domain.project.list.ProjectListInteractor
 import com.raserad.voicer.domain.project.listener.ProjectListenerInteractor
 import com.raserad.voicer.domain.project.remove.ProjectRemoveInteractor
 import com.raserad.voicer.domain.project.share.ProjectSharingInteractor
+import com.raserad.voicer.domain.project.broadcast.ProjectBroadcastInteractor
 import com.raserad.voicer.domain.sound.SoundInteractor
 import com.raserad.voicer.domain.sound.record.SoundRecordInteractor
 import com.raserad.voicer.domain.sound.remove.RemoveSoundInteractor
 import com.raserad.voicer.domain.video.VideoInteractor
 import com.raserad.voicer.domain.video.generate.VideoGenerateInteractor
 import com.raserad.voicer.domain.video.release.ReleaseVideoInteractor
+import com.raserad.voicer.domain.video.trim.VideoTrimInteractor
 
 class InteractorDI(private val repositoryDI: RepositoryDI) {
 
@@ -26,8 +28,11 @@ class InteractorDI(private val repositoryDI: RepositoryDI) {
         repositoryDI.getProjectCreate(),
         repositoryDI.getProjectListener(),
         repositoryDI.getReleaseVideo(),
-        repositoryDI.getVideo()
+        repositoryDI.getVideoTrim()
     )
+
+    fun getTempProject() =
+        ProjectBroadcastInteractor(repositoryDI.getTempProject())
 
     fun getProjectListener() = ProjectListenerInteractor(repositoryDI.getProjectListener())
 
@@ -42,4 +47,6 @@ class InteractorDI(private val repositoryDI: RepositoryDI) {
     fun getReleaseVideo() = ReleaseVideoInteractor(repositoryDI.getReleaseVideo())
 
     fun getVideoGenerate() = VideoGenerateInteractor(repositoryDI.getVideoGenerate())
+
+    fun getVideoTrim() = VideoTrimInteractor(repositoryDI.getVideoTrim())
 }

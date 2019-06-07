@@ -1,76 +1,59 @@
 package com.raserad.voicer.presentation.mvp.create
 
 import android.util.Log
+import com.arellomobile.mvp.InjectViewState
+import com.arellomobile.mvp.MvpPresenter
+import com.raserad.voicer.domain.project.broadcast.ProjectBroadcastInteractor
 import com.raserad.voicer.domain.project.create.ProjectCreateInteractor
 import com.raserad.voicer.domain.project.create.entities.ProjectCreateData
-import com.raserad.voicer.domain.video.VideoInteractor
-import com.raserad.voicer.domain.video.entities.Video
+import com.raserad.voicer.domain.video.trim.VideoTrimInteractor
 import com.raserad.voicer.presentation.Router
-import com.raserad.voicer.presentation.mvp.Presenter
 import com.raserad.voicer.presentation.utils.SubscribeManager
 
+@InjectViewState
 class ProjectCreatePresenter(
-    private val view: ProjectCreateView,
-    private val videoInteractor: VideoInteractor,
     private val projectCreateInteractor: ProjectCreateInteractor,
+    private val projectBroadcastInteractor: ProjectBroadcastInteractor,
+    videoTrimInteractor: VideoTrimInteractor,
     private val subscribeManager: SubscribeManager,
     private val router: Router
-): Presenter {
+): MvpPresenter<ProjectCreateView>() {
 
-    private var list: List<Video> = ArrayList()
+    private val view = viewState
 
-    private var projectCreateData = ProjectCreateData("", "", "", 0, 0)
+    private val trimData = videoTrimInteractor.getRemembered()
 
-    override fun onStart() {}
+    private var title: String? = null
+    private var description: String? = null
 
-    override fun onFinish() {
+    override fun onDestroy() {
+        super.onDestroy()
         subscribeManager.unsubscribeAll()
     }
 
-    fun getVideoList() {
-        val videoListGetting = videoInteractor.getList()
-            .doOnNext {list ->
-                this.list = list
-                view.showVideoList(list)
-                view.showEmpty(list.isEmpty())
-
-                if(list.isNotEmpty()) {
-                    view.showSelectedVideo(0)
-                }
-            }
-
-        subscribeManager.subscribe(videoListGetting)
+    fun rememberTitle(title: String) {
+        this.title = title.trim()
+        view.showTitleEmptyError(false)
     }
 
-    fun cancelCreating() {
-        router.back()
+    fun rememberDescription(description: String) {
+        this.description = description.trim()
     }
 
-    fun selectVideo(index: Int) {
-        view.showSelectedVideo(index)
-    }
+    fun create() {
+        view.showTitleEmptyError(title == null)
 
-    fun rememberProjectTitle(title: String) {
-        projectCreateData.title = title
-    }
+        val trimData = trimData ?: return
+        val title = title ?: return
+        val description = description ?: ""
 
-    fun rememberProjectDescription(description: String) {
-        projectCreateData.description = description
-    }
-
-    fun rememberVideoTrimData(videoPath: String?, startTime: Int, endTime: Int) {
-        if(videoPath != null) projectCreateData.videoPath = videoPath
-        projectCreateData.videoStartTime = startTime
-        projectCreateData.videoEndTime = endTime
-    }
-
-    fun createProject() {
         view.showCreateProgress(true)
+        val projectCreateData = ProjectCreateData(title, description, trimData)
         val projectCreating = projectCreateInteractor.create(projectCreateData)
             .doOnNext {project ->
-                Log.d("PROJECT_VIDEO_PATH", project.video)
-                view.showCreateProgress(false)
-                router.showProjectEditor(project)
+                view.dismiss()
+                projectBroadcastInteractor.remember(project)
+                router.showProjectEditor()
             }
 
         subscribeManager.subscribe(projectCreating)

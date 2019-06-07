@@ -2,7 +2,7 @@ package com.raserad.voicer
 
 import android.app.Application
 import android.content.Context
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg
+import com.arellomobile.mvp.RegisterMoxyReflectorPackages
 import io.realm.Realm
 import io.realm.Realm.setDefaultConfiguration
 import io.realm.RealmConfiguration
@@ -16,8 +16,6 @@ class App: Application() {
         Realm.init(this)
         val config = RealmConfiguration.Builder().name("voicer.realm").build()
         setDefaultConfiguration(config)
-
-        FFmpeg.getInstance(this).loadBinary(null)
     }
 
     companion object {

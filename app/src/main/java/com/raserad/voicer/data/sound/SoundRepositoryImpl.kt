@@ -20,7 +20,7 @@ class SoundRepositoryImpl: SoundRepository {
             val results = realm.where(SoundRecordObject::class.java).equalTo("uid", project.uid).findAll()
 
             results.forEach {recordObject ->
-                val record = SoundRecord(recordObject.id, recordObject.path, recordObject.start, recordObject.end, recordObject.isEnabled)
+                val record = SoundRecord(recordObject.id, recordObject.path, recordObject.start, recordObject.end, recordObject.total, recordObject.isEnabled)
                 records.add(record)
             }
 
@@ -44,6 +44,7 @@ class SoundRepositoryImpl: SoundRepository {
             recordObject.path = soundRecord.path
             recordObject.start = soundRecord.start
             recordObject.end = soundRecord.end
+            recordObject.total = soundRecord.total
             recordObject.isEnabled = soundRecord.isEnabled
             db.insert(recordObject)
         }
@@ -61,6 +62,7 @@ class SoundRepositoryImpl: SoundRepository {
             recordObject.path = soundRecord.path
             recordObject.start = soundRecord.start
             recordObject.end = soundRecord.end
+            recordObject.total = soundRecord.total
             recordObject.isEnabled = isEnabled
             db.copyToRealmOrUpdate(recordObject)
         }

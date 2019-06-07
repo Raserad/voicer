@@ -1,10 +1,10 @@
-package com.raserad.voicer.presentation.ui.create
+package com.raserad.voicer.presentation.ui.select
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.raserad.voicer.R
-import com.raserad.voicer.presentation.ui.create.entities.VideoPreviewViewData
+import com.raserad.voicer.presentation.ui.select.entities.VideoPreviewViewData
 import java.lang.Exception
 
 class VideoListAdapter: RecyclerView.Adapter<VideoViewHolder>() {

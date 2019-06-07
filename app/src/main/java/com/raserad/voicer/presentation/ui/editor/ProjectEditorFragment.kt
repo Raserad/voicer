@@ -12,11 +12,14 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.arellomobile.mvp.MvpAppCompatFragment
+import com.arellomobile.mvp.presenter.InjectPresenter
+import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.google.android.material.snackbar.Snackbar
 import com.raserad.voicer.App
 import com.raserad.voicer.R
+import com.raserad.voicer.di.AppDI
 import com.raserad.voicer.domain.sound.entities.SoundRecord
 import com.raserad.voicer.domain.video.release.entities.ReleaseVideo
 import com.raserad.voicer.presentation.mvp.editor.ProjectEditorPresenter
@@ -25,43 +28,47 @@ import com.raserad.voicer.presentation.ui.editor.entities.SoundRecordViewData
 import kotlinx.android.synthetic.main.dialog_need_audio_record_permission.view.*
 import kotlinx.android.synthetic.main.fragment_project_editor.*
 
-
-class ProjectEditorFragment: Fragment(), ProjectEditorView {
-
-    var presenter: ProjectEditorPresenter? = null
+class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
 
     private val SOUND_RECORD = 2
-
-    private var innerView: View? = null
 
     private val recordListAdapter = RecordListAdapter()
 
     private var recordRemoveSnackbar: Snackbar? = null
 
+    @InjectPresenter
+    lateinit var presenter: ProjectEditorPresenter
+
+    @ProvidePresenter
+    fun providePresenter() = AppDI.getPresenterDI()
+        .getProjectEditor(AppDI.getRouter())
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        val path = videoPlayer.getPath()
+        val time = videoPlayer.currentTime()
+        val isPlaying = videoPlayer.isPlaying()
+
+        outState.putString("path", path)
+        outState.putLong("time", time)
+        outState.putBoolean("playing", isPlaying)
+
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        if(innerView == null) {
-            retainInstance = true
-            innerView = inflater.inflate(R.layout.fragment_project_editor, container, false)
-        }
-        return innerView
+        return inflater.inflate(R.layout.fragment_project_editor, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(savedInstanceState == null) {
-            configure()
-            presenter?.onStart()
-        }
-    }
 
-    override fun onDetach() {
-        super.onDetach()
-        if(isRemoving) {
-            presenter?.onFinish()
+        if(savedInstanceState != null) {
+            val path = savedInstanceState.getString("path", "")
+            val time = savedInstanceState.getLong("time", 0)
+            val playing = savedInstanceState.getBoolean("playing", false)
+            videoPlayer.setPlayingState(path, time, playing)
         }
-    }
 
-    private fun configure() {
         soundRecordButton.setOnTouchListener { _, event ->
             when(event.action) {
                 MotionEvent.ACTION_DOWN -> recordSound()
@@ -72,30 +79,27 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
         }
 
         videoPlayer.videoFinishListener = {
-            presenter?.stopRecording(videoPlayer.totalTime())
+            presenter.stopRecording(videoPlayer.totalTime(), videoPlayer.totalTime())
         }
 
         backButton.setOnClickListener {
-            presenter?.back()
+            presenter.back()
         }
 
         shareProjectButton.setOnClickListener {
-            presenter?.shareProject()
+            presenter.shareProject()
         }
 
         recordListAdapter.soundTrackListener = { position, action ->
             when(action) {
-                SoundTrackActions.ENABLE -> presenter?.enableRecord(position, true)
-                SoundTrackActions.DISABLE -> presenter?.enableRecord(position, false)
-                SoundTrackActions.REMOVE -> presenter?.removeRecord(position)
+                SoundRecordActions.ENABLE -> presenter.enableRecord(position, true)
+                SoundRecordActions.DISABLE -> presenter.enableRecord(position, false)
+                SoundRecordActions.REMOVE -> presenter.removeRecord(position)
             }
         }
 
         recordsList.adapter = recordListAdapter
         recordsList.layoutManager = LinearLayoutManager(context)
-        recordsList.post {
-            recordListAdapter.recyclerWidth = recordsList.width
-        }
     }
 
     private fun recordSound() {
@@ -105,7 +109,7 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
             return
         }
 
-        presenter?.startRecording(videoPlayer.currentTime())
+        presenter.startRecording(videoPlayer.currentTime())
     }
 
     private fun stopRecording() {
@@ -114,7 +118,7 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
             return
         }
 
-        presenter?.stopRecording(videoPlayer.currentTime())
+        presenter.stopRecording(videoPlayer.currentTime(), videoPlayer.totalTime())
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -175,7 +179,7 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
         val preparedList: MutableList<SoundRecordViewData> = ArrayList()
 
         list.forEach {soundRecord ->
-            val soundRecordViewData = SoundRecordViewData(soundRecord.path, soundRecord.start, soundRecord.end, videoPlayer.totalTime(), soundRecord.isEnabled)
+            val soundRecordViewData = SoundRecordViewData(soundRecord.path, soundRecord.start, soundRecord.end, soundRecord.total, soundRecord.isEnabled)
             preparedList.add(soundRecordViewData)
         }
 
@@ -184,7 +188,7 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
     }
 
     override fun showRecordInsert(position: Int, record: SoundRecord) {
-        val soundRecordViewData = SoundRecordViewData(record.path, record.start, record.end, videoPlayer.totalTime(), record.isEnabled)
+        val soundRecordViewData = SoundRecordViewData(record.path, record.start, record.end, record.total, record.isEnabled)
         recordListAdapter.list.add(position, soundRecordViewData)
         recordListAdapter.notifyItemInserted(position)
         recordsList.scrollToPosition(position)
@@ -206,13 +210,13 @@ class ProjectEditorFragment: Fragment(), ProjectEditorView {
         if(isShow && view != null) {
             recordRemoveSnackbar = Snackbar.make(view!!, R.string.sound_record_remove, Snackbar.LENGTH_INDEFINITE)
             recordRemoveSnackbar?.setAction(R.string.project_removed_cancel) {
-                presenter?.cancelRecordRemoving()
+                presenter.cancelRecordRemoving()
             }
             recordRemoveSnackbar?.show()
         }
     }
 
     override fun showRecordingFinish() {
-        videoPlayer.showVideoAfterRecording()
+
     }
 }

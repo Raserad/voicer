@@ -8,14 +8,13 @@ import com.raserad.voicer.presentation.ui.editor.entities.SoundRecordViewData
 
 class RecordListAdapter: RecyclerView.Adapter<RecordViewHolder>() {
 
-    var recyclerWidth: Int = 0
     var list: MutableList<SoundRecordViewData> = ArrayList()
 
-    var soundTrackListener: ((position: Int, actions: SoundTrackActions) -> Unit)? = null
+    var soundTrackListener: ((position: Int, actions: SoundRecordActions) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.view_sound_track_item, parent, false)
-        return RecordViewHolder(view, soundTrackListener, recyclerWidth)
+        return RecordViewHolder(view, soundTrackListener)
     }
 
     override fun getItemCount(): Int {

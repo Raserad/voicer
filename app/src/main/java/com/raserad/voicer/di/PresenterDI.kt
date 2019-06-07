@@ -1,13 +1,10 @@
 package com.raserad.voicer.di
 
-import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.presentation.Router
 import com.raserad.voicer.presentation.mvp.create.ProjectCreatePresenter
-import com.raserad.voicer.presentation.mvp.create.ProjectCreateView
+import com.raserad.voicer.presentation.mvp.select.VideoSelectPresenter
 import com.raserad.voicer.presentation.mvp.editor.ProjectEditorPresenter
-import com.raserad.voicer.presentation.mvp.editor.ProjectEditorView
 import com.raserad.voicer.presentation.mvp.list.ProjectListPresenter
-import com.raserad.voicer.presentation.mvp.list.ProjectListView
 import com.raserad.voicer.presentation.mvp.start.StartPresenter
 import com.raserad.voicer.presentation.utils.SubscribeManager
 
@@ -20,34 +17,40 @@ class PresenterDI(private val interactorDI: InteractorDI) {
         interactorDI.getRemoveSound()
     )
 
-    fun getProjectList(view: ProjectListView, router: Router) = ProjectListPresenter(
-        view,
+    fun getProjectList(router: Router) = ProjectListPresenter(
         interactorDI.getProjectList(),
         interactorDI.getProjectRemove(),
         interactorDI.getProjectSharing(),
         interactorDI.getProjectListener(),
+        interactorDI.getTempProject(),
         getSubscribeManager(),
         router
     )
 
-    fun getProjectCreate(view: ProjectCreateView, router: Router) = ProjectCreatePresenter(
-        view,
+    fun getVideoSelect(router: Router) = VideoSelectPresenter(
         interactorDI.getVideo(),
-        interactorDI.getProjectCreate(),
+        interactorDI.getVideoTrim(),
         getSubscribeManager(),
         router
     )
 
-    fun getProjectEditor(view: ProjectEditorView, router: Router, project: Project) = ProjectEditorPresenter(
-        view,
+    fun getProjectCreate(router: Router) = ProjectCreatePresenter(
+        interactorDI.getProjectCreate(),
+        interactorDI.getTempProject(),
+        interactorDI.getVideoTrim(),
+        getSubscribeManager(),
+        router
+    )
+
+    fun getProjectEditor(router: Router) = ProjectEditorPresenter(
         interactorDI.getSound(),
         interactorDI.getSoundRecord(),
         interactorDI.getRemoveSound(),
         interactorDI.getReleaseVideo(),
         interactorDI.getVideoGenerate(),
         interactorDI.getProjectSharing(),
+        interactorDI.getTempProject(),
         getSubscribeManager(),
-        router,
-        project
+        router
     )
 }

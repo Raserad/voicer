@@ -1,77 +1,69 @@
 package com.raserad.voicer.presentation.ui.list
 
+import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.arellomobile.mvp.MvpAppCompatFragment
+import com.arellomobile.mvp.presenter.InjectPresenter
+import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.google.android.material.snackbar.Snackbar
 import com.raserad.voicer.R
+import com.raserad.voicer.di.AppDI
 import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.presentation.mvp.list.ProjectListPresenter
 import com.raserad.voicer.presentation.mvp.list.ProjectListView
 import com.raserad.voicer.presentation.ui.list.entities.ProjectViewData
 import kotlinx.android.synthetic.main.fragment_project_list.*
-import kotlinx.android.synthetic.main.fragment_project_list.view.*
 
-class ProjectListFragment: Fragment(), ProjectListView {
+class ProjectListFragment: MvpAppCompatFragment(), ProjectListView {
 
-    var presenter: ProjectListPresenter? = null
+    @InjectPresenter
+    lateinit var presenter: ProjectListPresenter
 
-    private var innerView: View? = null
+    @ProvidePresenter
+    fun providePresenter() = AppDI.getPresenterDI()
+        .getProjectList(AppDI.getRouter())
 
     private val projectListAdapter = ProjectListAdapter()
 
     private var deleteSnackbar: Snackbar? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        if(innerView == null) {
-            innerView = inflater.inflate(R.layout.fragment_project_list, container, false)
-        }
-        return innerView
+        return inflater.inflate(R.layout.fragment_project_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(savedInstanceState == null) {
-            configure()
-            presenter?.onStart()
-        }
-    }
 
-    override fun onDetach() {
-        super.onDetach()
-        if(isRemoving) {
-            presenter?.onFinish()
-        }
-    }
-
-    private fun configure() {
         projectListAdapter.projectActionsListener = { position, action ->
             when(action) {
-                ProjectListActions.EDIT -> presenter?.showProjectEditor(position)
-                ProjectListActions.REMOVE -> presenter?.removeProject(position)
-                ProjectListActions.SHARE -> presenter?.shareProject(position)
+                ProjectListActions.EDIT -> presenter.showProjectEditor(position)
+                ProjectListActions.REMOVE -> presenter.removeProject(position)
+                ProjectListActions.SHARE -> presenter.shareProject(position)
             }
         }
 
         listView.adapter = projectListAdapter
-        listView.layoutManager = LinearLayoutManager(activity)
+
+        val currentOrientation = resources.configuration.orientation
+        if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
+            listView.layoutManager = LinearLayoutManager(activity)
+        } else {
+            listView.layoutManager = GridLayoutManager(activity!!, 2)
+        }
 
         projectCreateButton.setOnClickListener {
-            presenter?.showProjectCreate()
+            presenter.showProjectCreate()
         }
     }
 
     override fun showProjectRemove(position: Int) {
         projectListAdapter.list.removeAt(position)
         projectListAdapter.notifyItemRemoved(position)
-    }
-
-    override fun showProjectChange(project: Project) {
-
     }
 
     override fun showProjectInsert(position: Int, project: Project) {
@@ -103,7 +95,7 @@ class ProjectListFragment: Fragment(), ProjectListView {
         if(isShow && view != null) {
             deleteSnackbar = Snackbar.make(view!!, R.string.project_removed_notification, Snackbar.LENGTH_INDEFINITE)
             deleteSnackbar?.setAction(R.string.project_removed_cancel) {
-                presenter?.cancelProjectRemoving()
+                presenter.cancelProjectRemoving()
             }
             deleteSnackbar?.show()
         }

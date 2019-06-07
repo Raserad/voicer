@@ -1,21 +1,22 @@
-package com.raserad.voicer.presentation.mvp.create
+package com.raserad.voicer.presentation.mvp.select
 
 import com.arellomobile.mvp.MvpView
 import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
+import com.raserad.voicer.domain.video.entities.Video
 
-interface ProjectCreateView: MvpView {
-
-    @StateStrategyType(AddToEndSingleStrategy::class)
-    fun showCreateProgress(isShow: Boolean)
+interface VideoSelectView: MvpView {
 
     @StateStrategyType(SkipStrategy::class)
-    fun showKeyboard()
+    fun checkVideoListPermissions()
 
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun showTitleEmptyError(isShow: Boolean)
+    fun showVideoList(list: List<Video>)
 
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun dismiss()
+    fun showSelectedVideo(index: Int)
+
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showEmpty(isShow: Boolean)
 }

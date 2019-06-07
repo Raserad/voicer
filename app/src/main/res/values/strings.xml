@@ -11,7 +11,7 @@
         видеофайлов
     </string>
     <string name="cancel_file_need_permission">Отмена</string>
-    <string name="confirm_file_need_permission">Ok</string>
+    <string name="confirm_file_need_permission">OK</string>
     <string name="sound_permission_title">Приложению необходимо разрешение на запись аудио</string>
     <string name="sound_permission_description">Это нужно для того чтобы приложение имело вохможность озвучивать видео
     </string>

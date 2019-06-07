@@ -1,15 +1,13 @@
-package com.raserad.voicer.presentation.ui.create
+package com.raserad.voicer.presentation.ui.select
 
 import android.app.Activity
+import android.graphics.BitmapFactory
 import android.media.ThumbnailUtils
 import android.provider.MediaStore
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.raserad.voicer.presentation.ui.create.entities.VideoPreviewViewData
+import com.raserad.voicer.presentation.ui.select.entities.VideoPreviewViewData
 import kotlinx.android.synthetic.main.view_video_item.view.*
-
-
-
 
 class VideoViewHolder(private val view: View, private val videoSelectListener: ((index: Int) -> Unit)?): RecyclerView.ViewHolder(view) {
 
