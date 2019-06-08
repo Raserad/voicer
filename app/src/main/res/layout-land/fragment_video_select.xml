@@ -66,16 +66,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="60dp"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
         <RelativeLayout
-                android:visibility="gone"
-                android:id="@+id/videoTrimmerParent"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"/>
-
-        <RelativeLayout
-                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:layout_width="0dp"
                 android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -95,6 +90,13 @@
                     android:textSize="24sp"
                     android:layout_centerInParent="true"/>
         </RelativeLayout>
+
+        <com.raserad.videoutils.RaseradVideoTrimmer
+                android:layout_weight="1"
+                android:visibility="gone"
+                android:id="@+id/videoTrimmer"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
 
     </LinearLayout>
 

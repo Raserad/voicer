@@ -41,7 +41,6 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
     private var mSrc: Uri? = null
     private var mFinalPath: String? = null
 
-    private val mMaxDuration = 100000000
     private var mListeners: MutableList<OnProgressVideoListener>? = null
 
     private var mDuration = 0L
@@ -55,17 +54,13 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
     private var letUserProceed: Boolean = false
     private var mGestureDetector: GestureDetector? = null
     private var initialLength = 0L
+
     private val mGestureListener = object : GestureDetector.SimpleOnGestureListener() {
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             if (mVideoView!!.isPlaying) {
-                mMessageHandler.removeMessages(SHOW_PROGRESS)
-                mPlayView!!.visibility = View.VISIBLE
-                mVideoView!!.pause()
+                pauseVideo()
             } else {
-                mPlayView!!.visibility = View.GONE
-
-                mMessageHandler.sendEmptyMessage(SHOW_PROGRESS)
-                mVideoView!!.start()
+                playVideo()
             }
             return true
         }
@@ -76,27 +71,40 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
         true
     }
 
+    fun currentTime(): Long {
+        return mVideoView!!.currentPosition
+    }
+
+    fun isPlaying(): Boolean {
+        return mVideoView!!.isPlaying
+    }
+
     private var isPlayingVideo = false
 
     val videoTrimData: VideoTrimData
         get() {
-            val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, mSrc)
-            val METADATA_KEY_DURATION =
-                java.lang.Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
+            if(mSrc != null) {
+                val mediaMetadataRetriever = MediaMetadataRetriever()
+                mediaMetadataRetriever.setDataSource(context, mSrc)
+                val METADATA_KEY_DURATION =
+                    java.lang.Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
 
-            val file = File(mSrc!!.path)
+                val file = File(mSrc!!.path)
 
-            if (mTimeVideo < MIN_TIME_FRAME) {
+                if (mTimeVideo < MIN_TIME_FRAME) {
 
-                if (METADATA_KEY_DURATION - mEndPosition > MIN_TIME_FRAME - mTimeVideo) {
-                    mEndPosition += MIN_TIME_FRAME - mTimeVideo
-                } else if (mStartPosition > MIN_TIME_FRAME - mTimeVideo) {
-                    mStartPosition -= MIN_TIME_FRAME - mTimeVideo
+                    if (METADATA_KEY_DURATION - mEndPosition > MIN_TIME_FRAME - mTimeVideo) {
+                        mEndPosition += MIN_TIME_FRAME - mTimeVideo
+                    } else if (mStartPosition > MIN_TIME_FRAME - mTimeVideo) {
+                        mStartPosition -= MIN_TIME_FRAME - mTimeVideo
+                    }
                 }
-            }
 
-            return VideoTrimData(file.path, mStartPosition, mEndPosition)
+                return VideoTrimData(file.path, mStartPosition, mEndPosition)
+            }
+            else {
+                return VideoTrimData("", 0, 0)
+            }
         }
 
     private val fileSize: Long
@@ -162,32 +170,11 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
 
         mHolderTopView!!.setOnSeekBarChangeListener(this)
 
-        mVideoView!!.setOnPreparedListener {
-            val videoWidth = mVideoView!!.width
-            val videoHeight = mVideoView!!.height
-            val videoProportion = videoWidth.toFloat() / videoHeight.toFloat()
-            val screenWidth = mLinearVideo!!.width
-            val screenHeight = mLinearVideo!!.height
-            val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
-            val lp = mVideoView!!.layoutParams
-
-            if (videoProportion > screenProportion) {
-            lp.width = screenWidth
-            lp.height = (screenWidth.toFloat() / videoProportion).toInt()
-            } else {
-            lp.width = (videoProportion * screenHeight.toFloat()).toInt()
-            lp.height = screenHeight
-            }
-            mVideoView!!.layoutParams = lp
-
-            mPlayView!!.visibility = View.VISIBLE
-
-            mDuration = mVideoView!!.duration.toLong()
-            setSeekBarPosition()
-            setTimeVideo(0)
-        }
         mVideoView!!.setOnCompletionListener {
-            mVideoView!!.restart()
+            restartVideo()
+            setTimeVideo(0)
+            setProgressBarPosition(0)
+            mVideoView?.seekTo(0)
         }
         mVideoView!!.setOnErrorListener {
             return@setOnErrorListener false
@@ -201,13 +188,59 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
         setDefaultDestinationPath()
     }
 
+    private fun preparePlayer() {
+        val videoWidth = mVideoView!!.width
+        val videoHeight = mVideoView!!.height
+        val videoProportion = videoWidth.toFloat() / videoHeight.toFloat()
+        val screenWidth = mLinearVideo!!.width
+        val screenHeight = mLinearVideo!!.height
+        val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
+        val lp = mVideoView!!.layoutParams
+
+        if (videoProportion > screenProportion) {
+            lp.width = screenWidth
+            lp.height = (screenWidth.toFloat() / videoProportion).toInt()
+        } else {
+            lp.width = (videoProportion * screenHeight.toFloat()).toInt()
+            lp.height = screenHeight
+        }
+        mVideoView!!.layoutParams = lp
+
+        mPlayView!!.visibility = View.VISIBLE
+
+        mDuration = mVideoView!!.duration
+
+        setSeekBarPosition()
+        setTimeVideo(0)
+    }
+
     fun setVideoURI(videoURI: Uri) {
+        if(mSrc != null) {
+            if(mSrc!!.path == videoURI.path) {
+                return
+            }
+        }
         mSrc = videoURI
 
         mVideoView!!.setVideoURI(mSrc)
         mVideoView!!.requestFocus()
 
         mTimeLineView!!.setVideo(mSrc!!)
+
+        mVideoView!!.setOnPreparedListener {
+            preparePlayer()
+            restartVideo()
+            setTimeVideo(0)
+            setProgressBarPosition(0)
+            mVideoView?.seekTo(0)
+            mStartPosition = 0
+            mEndPosition = mVideoView!!.duration
+            if(mDuration > 0) {
+                mRangeSeekBarView!!.setThumbValue(0, (mStartPosition * 100 / mDuration).toFloat())
+                mRangeSeekBarView!!.setThumbValue(1, (mEndPosition * 100 / mDuration).toFloat())
+            }
+            mVideoView!!.setOnPreparedListener {  }
+        }
     }
 
     private fun setDefaultDestinationPath() {
@@ -253,18 +286,6 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
 
     private fun setSeekBarPosition() {
 
-        if (mDuration >= mMaxDuration) {
-            mStartPosition = mDuration / 2 - mMaxDuration / 2
-            mEndPosition = mDuration / 2 + mMaxDuration / 2
-
-            mRangeSeekBarView!!.setThumbValue(0, (mStartPosition * 100 / mDuration).toFloat())
-            mRangeSeekBarView!!.setThumbValue(1, (mEndPosition * 100 / mDuration).toFloat())
-
-        } else {
-            mStartPosition = 0
-            mEndPosition = mDuration
-        }
-
         setProgressBarPosition(mStartPosition)
         mVideoView!!.seekTo(mStartPosition)
 
@@ -274,11 +295,45 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
         initialLength = (mEndPosition - mStartPosition) / 1000
     }
 
-    fun pauseVideo() {
+    fun setTrimState(path: String, time: Long, start: Long, end: Long, isPlaying: Boolean) {
+        setVideoURI(Uri.parse(path))
+        mVideoView!!.setOnPreparedListener {
+            preparePlayer()
+            mVideoView?.seekTo(time)
+            setProgressBarPosition(time)
+            mStartPosition = start
+            mEndPosition = end
+            mRangeSeekBarView!!.setThumbValue(0, (mStartPosition * 100 / mDuration).toFloat())
+            mRangeSeekBarView!!.setThumbValue(1, (mEndPosition * 100 / mDuration).toFloat())
+            if(isPlaying) {
+                playVideo()
+            }
+            else {
+                pauseVideo()
+            }
+            mVideoView!!.setOnPreparedListener {  }
+        }
+    }
+
+    private fun pauseVideo() {
+        mMessageHandler.removeMessages(SHOW_PROGRESS)
         mPlayView!!.visibility = View.VISIBLE
         mVideoView!!.pause()
     }
 
+    private fun restartVideo() {
+        mVideoView?.restart()
+        setProgressBarPosition(mStartPosition)
+        mVideoView?.seekTo(mStartPosition)
+        pauseVideo()
+    }
+
+    private fun playVideo() {
+        mPlayView!!.visibility = View.GONE
+
+        mMessageHandler.sendEmptyMessage(SHOW_PROGRESS)
+        mVideoView!!.start()
+    }
 
     private fun setTimeVideo(position: Long) {
         mTextTime!!.text = String.format("%s", stringForTime(position))
@@ -362,13 +417,10 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
     }
 
     override fun updateProgress(time: Long, max: Long, scale: Float) {
-        if (mVideoView == null) {
-            return
-        }
-
         if (time >= mEndPosition) {
             mMessageHandler.removeMessages(SHOW_PROGRESS)
             mResetSeekBar = true
+            restartVideo()
             return
         }
 

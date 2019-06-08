@@ -5,17 +5,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import com.raserad.voicer.R
 import com.raserad.voicer.presentation.Router
-import com.raserad.voicer.domain.project.entities.Project
-import com.raserad.voicer.presentation.ui.create.ProjectCreateFragment
+import com.raserad.voicer.presentation.ui.create.ProjectCreateDialog
+import com.raserad.voicer.presentation.ui.select.VideoSelectFragment
 import com.raserad.voicer.presentation.ui.editor.ProjectEditorFragment
 import com.raserad.voicer.presentation.ui.list.ProjectListFragment
 
-class RouterDI(var activity: Activity, private val presenterDI: PresenterDI): Router {
+class RouterDI(var activity: Activity): Router {
 
     private fun fragmentManager() = (activity as AppCompatActivity).supportFragmentManager
 
     override fun start() {
-        presenterDI.getStart().onStart()
+
+        AppDI.getPresenterDI().getRemovedKeeper().keepRemoved()
 
         showProjectList()
     }
@@ -27,8 +28,6 @@ class RouterDI(var activity: Activity, private val presenterDI: PresenterDI): Ro
     override fun showProjectList() {
         val fragment = ProjectListFragment()
 
-        fragment.presenter = presenterDI.getProjectList(fragment, this)
-
         fragmentManager()
             .beginTransaction()
             .add(R.id.container, fragment, "project_list")
@@ -36,24 +35,26 @@ class RouterDI(var activity: Activity, private val presenterDI: PresenterDI): Ro
     }
 
     override fun showProjectCreate() {
-        val fragment = ProjectCreateFragment()
+        val dialog = ProjectCreateDialog()
 
-        fragment.presenter = presenterDI.getProjectCreate(fragment, this)
+        dialog.show(fragmentManager(), "project_create")
+    }
+
+    override fun showVideSelect() {
+        val fragment = VideoSelectFragment()
 
         fragmentManager()
             .beginTransaction()
-            .addToBackStack("project_create")
+            .addToBackStack("video_select")
             .setCustomAnimations(R.anim.slide_up, R.anim.stay, R.anim.stay, R.anim.slide_down)
-            .add(R.id.container, fragment, "project_create")
+            .add(R.id.container, fragment, "video_select")
             .commit()
     }
 
-    override fun showProjectEditor(project: Project) {
-        fragmentManager().popBackStackImmediate("project_create", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    override fun showProjectEditor() {
+        fragmentManager().popBackStackImmediate("video_select", FragmentManager.POP_BACK_STACK_INCLUSIVE)
 
         val fragment = ProjectEditorFragment()
-
-        fragment.presenter = presenterDI.getProjectEditor(fragment, this, project)
 
         fragmentManager()
             .beginTransaction()

@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.raserad.voicer.di.AppDI
+import com.raserad.voicer.services.RemoveKeeperService
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import android.content.Intent
+
+
 
 class AppActivity : AppCompatActivity() {
 
@@ -26,8 +30,9 @@ class AppActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         if(isFinishing) {
-            Log.d("FINISHING", "okay")
             AppDI.finish()
+            val intent = Intent(this, RemoveKeeperService::class.java)
+            startService(intent)
         }
     }
 }

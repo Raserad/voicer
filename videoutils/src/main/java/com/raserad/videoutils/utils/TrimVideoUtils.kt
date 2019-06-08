@@ -25,25 +25,18 @@ package com.raserad.videoutils.utils
 
 import android.net.Uri
 import android.util.Log
-import com.coremedia.iso.boxes.Container
-import com.raserad.videoutils.interfaces.OnTrimVideoListener
 import com.googlecode.mp4parser.FileDataSourceViaHeapImpl
-import com.googlecode.mp4parser.authoring.Movie
 import com.googlecode.mp4parser.authoring.Track
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack
-
+import com.raserad.videoutils.interfaces.OnTrimVideoListener
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
-import java.util.Arrays
-import java.util.Date
-import java.util.LinkedList
-import java.util.Locale
+import java.util.*
 
 
 object TrimVideoUtils {

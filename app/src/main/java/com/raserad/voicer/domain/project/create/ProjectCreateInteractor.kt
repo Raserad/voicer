@@ -4,30 +4,26 @@ import com.raserad.voicer.domain.project.create.entities.ProjectCreateData
 import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.domain.project.listener.ProjectEventType
 import com.raserad.voicer.domain.project.listener.ProjectListenerRepository
-import com.raserad.voicer.domain.video.VideoRepository
-import com.raserad.voicer.domain.video.release.ReleaseVideoRepository
+import com.raserad.voicer.domain.video.trim.VideoTrimRepository
 import io.reactivex.Observable
 import kotlin.random.Random
 
 class ProjectCreateInteractor(
     private val projectCreateRepository: ProjectCreateRepository,
     private val projectListenerRepository: ProjectListenerRepository,
-    private val releaseVideoRepository: ReleaseVideoRepository,
-    private val videoRepository: VideoRepository
+    private val videoTrimRepository: VideoTrimRepository
 ) {
 
     fun create(projectCreateData: ProjectCreateData): Observable<Project> {
         lateinit var project: Project
-        return videoRepository.trimVideo(projectCreateData.videoPath, projectCreateData.videoStartTime, projectCreateData.videoEndTime)
-            .map { video ->
+        return videoTrimRepository.trim(projectCreateData.videoTrimData)
+            .flatMap {video ->
                 project = Project(generateUid(), projectCreateData.title, projectCreateData.description, video.path)
                 projectCreateRepository.create(project)
-                projectListenerRepository.notify(ProjectEventType.CREATE, project)
-
-                project
             }
-            .flatMap {
-                releaseVideoRepository.generateReleaseVideo(project)
+            .map {
+                projectListenerRepository.notify(ProjectEventType.CREATE, project)
+                project
             }
             .map {
                 project

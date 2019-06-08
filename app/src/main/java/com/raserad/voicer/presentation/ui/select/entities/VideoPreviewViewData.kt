@@ -1,4 +1,4 @@
-package com.raserad.voicer.presentation.ui.create.entities
+package com.raserad.voicer.presentation.ui.select.entities
 
 import android.graphics.Bitmap
 

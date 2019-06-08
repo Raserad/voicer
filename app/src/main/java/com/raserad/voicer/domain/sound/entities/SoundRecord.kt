@@ -5,5 +5,6 @@ data class SoundRecord(
     var path: String,
     var start: Long,
     var end: Long,
+    var total: Long,
     var isEnabled: Boolean
 )

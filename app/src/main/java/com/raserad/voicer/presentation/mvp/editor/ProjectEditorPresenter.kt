@@ -1,59 +1,63 @@
 package com.raserad.voicer.presentation.mvp.editor
 
-import com.raserad.voicer.domain.project.entities.Project
+import android.util.Log
+import com.arellomobile.mvp.InjectViewState
+import com.arellomobile.mvp.MvpPresenter
 import com.raserad.voicer.domain.project.share.ProjectSharingInteractor
+import com.raserad.voicer.domain.project.broadcast.ProjectBroadcastInteractor
 import com.raserad.voicer.domain.sound.SoundInteractor
-import com.raserad.voicer.domain.sound.record.SoundRecordInteractor
 import com.raserad.voicer.domain.sound.entities.SoundRecord
+import com.raserad.voicer.domain.sound.record.SoundRecordInteractor
 import com.raserad.voicer.domain.sound.remove.RemoveSoundInteractor
 import com.raserad.voicer.domain.video.generate.VideoGenerateInteractor
-import com.raserad.voicer.domain.video.release.ReleaseVideoInteractor
-import com.raserad.voicer.domain.video.release.entities.ReleaseVideo
 import com.raserad.voicer.presentation.Router
-import com.raserad.voicer.presentation.mvp.Presenter
 import com.raserad.voicer.presentation.utils.SubscribeManager
 
+@InjectViewState
 class ProjectEditorPresenter(
-    private val view: ProjectEditorView,
     private val soundInteractor: SoundInteractor,
     private val soundRecordInteractor: SoundRecordInteractor,
     private val removeSoundInteractor: RemoveSoundInteractor,
-    private val releaseVideoInteractor: ReleaseVideoInteractor,
     private val videoGenerateInteractor: VideoGenerateInteractor,
     private val projectSharingInteractor: ProjectSharingInteractor,
+    projectBroadcastInteractor: ProjectBroadcastInteractor,
     private val subscribeManager: SubscribeManager,
-    private val router: Router,
-    private val project: Project
-): Presenter {
+    private val router: Router
+): MvpPresenter<ProjectEditorView>() {
+
+    private val view = viewState
 
     private var recordList: MutableList<SoundRecord> = ArrayList()
 
-    private var releaseVideo: ReleaseVideo? = null
     private var removedRecord: SoundRecord? = null
     private var removedRecordPosition: Int = 0
 
-    override fun onStart() {
-        val recordingListener = soundRecordInteractor.getRecordingListener()
-            .doOnNext {soundRecord ->
-                soundInteractor.addToProject(project, soundRecord)
-                recordList.add(soundRecord)
-                view.showRecordInsert(0, soundRecord)
-                view.showRecordsEmpty(false)
+    private val project = projectBroadcastInteractor.getRemembered()
 
-                videoGenerateInteractor.generateVideo(project)
+    override fun onFirstViewAttach() {
+        super.onFirstViewAttach()
+
+        val project = project ?: return
+
+        val recordingListener = soundRecordInteractor.getRecordingListener()
+            .flatMap {soundRecord ->
+                soundInteractor.addToProject(project, soundRecord)
+            }
+            .doOnNext {soundRecord ->
+                recordList.add(0, soundRecord)
+                if(recordList.isEmpty()) {
+                    view.showRecordList(recordList)
+                }
+                else {
+                    view.showRecordInsert(0, soundRecord)
+                }
+                view.showRecordsEmpty(false)
 
                 view.showRecordingFinish()
             }
+            .doOnNext { generateVideo() }
 
         subscribeManager.subscribe(recordingListener)
-
-        val releaseVideoGetting = releaseVideoInteractor.getVideo(project)
-            .doOnNext {video ->
-                this.releaseVideo = video
-                view.showVideo(video)
-            }
-
-        subscribeManager.subscribe(releaseVideoGetting)
 
         val recordListGetting = soundInteractor.getList(project)
             .doOnNext {list ->
@@ -61,24 +65,40 @@ class ProjectEditorPresenter(
                 view.showRecordList(list)
                 view.showRecordsEmpty(list.isEmpty())
             }
-
         subscribeManager.subscribe(recordListGetting)
+
+        view.showVideo(project.video)
     }
 
-    override fun onFinish() {
-        removeSoundInteractor.removeMarked()
+    override fun onDestroy() {
+        super.onDestroy()
         subscribeManager.unsubscribeAll()
+
+        subscribeManager.subscribe(removeSoundInteractor.removeMarked())
     }
 
     fun enableRecord(position: Int, isEnabled: Boolean) {
-        recordList[position].isEnabled = isEnabled
-        soundInteractor.enableInProject(project, recordList[position], isEnabled)
-        view.showRecordEnabled(position, isEnabled)
+        val project = project ?: return
+
+        val enablingRecord = soundInteractor.enableInProject(project, recordList[position], isEnabled)
+            .doOnNext {
+                recordList[position].isEnabled = isEnabled
+                view.showRecordEnabled(position, isEnabled)
+
+                generateVideo()
+            }
+
+        subscribeManager.subscribe(enablingRecord)
     }
 
     fun removeRecord(position: Int) {
+        subscribeManager.unsubscribe("remove_canceling")
+        val project = project ?: return
+
         removedRecord = recordList.removeAt(position)
         removedRecordPosition = position
+
+        generateVideo()
 
         view.showRecordRemoveCancelAction(true)
         view.showRecordRemove(position)
@@ -94,14 +114,25 @@ class ProjectEditorPresenter(
 
     fun cancelRecordRemoving() {
         subscribeManager.unsubscribe("record_removing")
-        view.showRecordRemoveCancelAction(false)
-        removeSoundInteractor.cancelRemoving()
+        val removeCanceling = removeSoundInteractor.cancelRemoving()
+            .doOnNext {
+                view.showRecordRemoveCancelAction(false)
 
-        recordList.add(removedRecordPosition, removedRecord!!)
-        view.showRecordInsert(removedRecordPosition, removedRecord!!)
-        view.showRecordsEmpty(recordList.isEmpty())
+                recordList.add(removedRecordPosition, removedRecord!!)
+                if(recordList.isEmpty()) {
+                    view.showRecordList(recordList)
+                }
+                else {
+                    view.showRecordInsert(removedRecordPosition, removedRecord!!)
+                }
+                view.showRecordsEmpty(recordList.isEmpty())
 
-        removedRecord = null
+                generateVideo()
+
+                removedRecord = null
+            }
+
+        subscribeManager.subscribe(removeCanceling, "remove_canceling")
     }
 
     fun startRecording(time: Long) {
@@ -110,17 +141,34 @@ class ProjectEditorPresenter(
         soundRecordInteractor.startRecording(time)
     }
 
-    fun stopRecording(time: Long) {
+    fun stopRecording(time: Long, totalTime: Long) {
         view.showSoundRecordMessage(false)
         view.playVideo(false)
-        soundRecordInteractor.stopRecording(time)
+        soundRecordInteractor.stopRecording(time, totalTime)
     }
 
     fun shareProject() {
+        val project = project ?: return
+
         projectSharingInteractor.share(project)
     }
 
     fun back() {
         router.back()
+    }
+
+    private fun generateVideo() {
+
+        val project = project ?: return
+
+        view.showVideoGeneratingProgress(true)
+
+        val videoGenerating = videoGenerateInteractor.generateVideo(project)
+            .doOnNext {
+                view.showVideoGeneratingProgress(false)
+                view.showRecordingFinish()
+            }
+
+        subscribeManager.subscribe(videoGenerating, "video_generating")
     }
 }

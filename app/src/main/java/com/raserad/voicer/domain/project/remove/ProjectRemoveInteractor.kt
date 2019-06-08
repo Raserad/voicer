@@ -1,8 +1,6 @@
 package com.raserad.voicer.domain.project.remove
 
 import com.raserad.voicer.domain.project.entities.Project
-import com.raserad.voicer.domain.project.listener.ProjectEventType
-import com.raserad.voicer.domain.project.listener.ProjectListenerRepository
 import io.reactivex.Observable
 import java.util.concurrent.TimeUnit
 
@@ -11,17 +9,14 @@ class ProjectRemoveInteractor(
 ) {
 
     fun remove(project: Project): Observable<Unit> {
-        projectRemoveRepository.removeMarked()
-        projectRemoveRepository.markToRemove(project)
-        return Observable.timer(REMOVE_DELAY.toLong(), TimeUnit.SECONDS)
-            .map {
-                projectRemoveRepository.removeMarked()
-            }
+        return  projectRemoveRepository.removeMarked()
+            .flatMap { projectRemoveRepository.markToRemove(project) }
+            .flatMap { Observable.timer(REMOVE_DELAY.toLong(), TimeUnit.SECONDS) }
+            .flatMap { projectRemoveRepository.removeMarked() }
+            .map {}
     }
 
-    fun cancelRemoving() {
-        projectRemoveRepository.unmarkMarked()
-    }
+    fun cancelRemoving() = projectRemoveRepository.unmarkMarked()
 
     fun removeMarked() = projectRemoveRepository.removeMarked()
 

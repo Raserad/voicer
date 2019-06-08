@@ -11,12 +11,11 @@
                 android:clickable="true"
                 android:focusable="true">
 
-    <LinearLayout
+    <com.raserad.voicer.presentation.ui.editor.SoundTrackView
             android:id="@+id/soundTack"
-            android:layout_width="30dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:background="@color/colorPrimary"/>
+            android:orientation="horizontal"/>
 
     <RelativeLayout
             android:id="@+id/disabledMask"

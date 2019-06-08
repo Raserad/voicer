@@ -7,7 +7,7 @@ interface SoundRecordRepository {
 
     fun startRecording(id: Int, time: Long)
 
-    fun stopRecording(time: Long)
+    fun stopRecording(time: Long, totalTime: Long)
 
     fun getResultRecord(): SoundRecord?
 

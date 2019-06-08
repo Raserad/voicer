@@ -23,17 +23,23 @@
  */
 package com.raserad.videoutils.view
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.util.AndroidException
 import android.util.AttributeSet
 import android.util.LongSparseArray
 import android.view.View
-import com.raserad.videoutils.utils.BackgroundExecutor
-import com.raserad.videoutils.utils.UiThreadExecutor
 import com.raserad.videotrimming.R
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Created by Deep Patel
@@ -46,9 +52,11 @@ class TimeLineView @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     private var mVideoUri: Uri? = null
     private var mHeightView: Int = 0
-    private var mBitmapList: LongSparseArray<Bitmap>? = null
+    private var mBitmapList: MutableList<Bitmap> = ArrayList()
 
     private var currentSize = 0
+
+    private var bitmapThread: Disposable? = null
 
     init {
         init()
@@ -79,87 +87,73 @@ class TimeLineView @JvmOverloads constructor(context: Context, attrs: AttributeS
     }
 
     private fun getBitmap(viewWidth: Int) {
-        BackgroundExecutor.execute(object : BackgroundExecutor.Task("", 0L, "") {
-            override fun execute() {
+        bitmapThread?.dispose()
+
+        bitmapThread = Observable.create<Bitmap> {observer ->
+            if (mVideoUri == null) {
+                return@create
+            }
+
+            val mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(context, mVideoUri)
+
+            /* Retrieve media data*/
+            val videoLengthInMs =
+                (Integer.parseInt(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000).toLong()
+
+            /*Set thumbnail properties (Thumbs are squares)*/
+            val thumbWidth = mHeightView
+            val thumbHeight = mHeightView
+
+            var numThumbs = Math.ceil((viewWidth.toFloat() / thumbWidth).toDouble()).toInt()
+
+            if (numThumbs == 0) {
+                numThumbs = 1
+            }
+
+            val interval = videoLengthInMs / numThumbs
+
+            for (i in 0 until numThumbs) {
+                var bitmap = mediaMetadataRetriever.getFrameAtTime(
+                    i * interval,
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC
+                )
                 try {
-                    val thumbnailList = LongSparseArray<Bitmap>()
-
-                    if (mVideoUri == null) {
-                        return
-                    }
-
-                    val mediaMetadataRetriever = MediaMetadataRetriever()
-                    mediaMetadataRetriever.setDataSource(context, mVideoUri)
-
-                    /* Retrieve media data*/
-                    val videoLengthInMs =
-                        (Integer.parseInt(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000).toLong()
-
-                    /*Set thumbnail properties (Thumbs are squares)*/
-                    val thumbWidth = mHeightView
-                    val thumbHeight = mHeightView
-
-                    var numThumbs = Math.ceil((viewWidth.toFloat() / thumbWidth).toDouble()).toInt()
-
-                    if (numThumbs == 0) {
-                        numThumbs = 1
-                    }
-
-                    val interval = videoLengthInMs / numThumbs
-
-                    for (i in 0 until numThumbs) {
-                        var bitmap = mediaMetadataRetriever.getFrameAtTime(
-                            i * interval,
-                            MediaMetadataRetriever.OPTION_CLOSEST_SYNC
-                        )
-                        try {
-                            bitmap = Bitmap.createScaledBitmap(bitmap, thumbWidth, thumbHeight, false)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-
-                        thumbnailList.put(i.toLong(), bitmap)
-                    }
-
-                    mediaMetadataRetriever.release()
-                    returnBitmaps(thumbnailList)
-                } catch (e: Throwable) {
-                    Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e)
+                    bitmap = Bitmap.createScaledBitmap(bitmap, thumbWidth, thumbHeight, false)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
 
+                observer.onNext(bitmap)
             }
+            mediaMetadataRetriever.release()
         }
-        )
-    }
-
-    private fun returnBitmaps(thumbnailList: LongSparseArray<Bitmap>) {
-        UiThreadExecutor.runTask("", {
-            mBitmapList = thumbnailList
+        .subscribeOn(Schedulers.computation())
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext {bitmap ->
+            mBitmapList.add(bitmap)
             invalidate()
-        }, 0L)
+        }
+        .subscribe()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (mBitmapList != null) {
-            canvas.save()
-            var x = 0
+        canvas.save()
+        var x = 0
 
-            for (i in 0 until mBitmapList!!.size()) {
-                val bitmap = mBitmapList!!.get(i.toLong())
+        for (i in 0 until mBitmapList.count()) {
+            val bitmap = mBitmapList[i]
 
-                if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, x.toFloat(), 0f, null)
-                    x += bitmap.width
-                }
-            }
+            canvas.drawBitmap(bitmap, x.toFloat(), 0f, null)
+            x += bitmap.width
         }
     }
 
     fun setVideo(data: Uri) {
         mVideoUri = data
-        mBitmapList = null
+        mBitmapList = ArrayList()
         invalidate()
         getBitmap(currentSize)
     }

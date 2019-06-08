@@ -8,7 +8,7 @@ interface SoundRepository {
 
     fun getList(project: Project): Observable<MutableList<SoundRecord>>
 
-    fun addToProject(project: Project, soundRecord: SoundRecord)
+    fun addToProject(project: Project, soundRecord: SoundRecord): Observable<SoundRecord>
 
-    fun enableInProject(project: Project, soundRecord: SoundRecord, isDisabled: Boolean)
+    fun enableInProject(project: Project, soundRecord: SoundRecord, isEnabled: Boolean): Observable<Boolean>
 }

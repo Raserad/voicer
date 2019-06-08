@@ -1,11 +1,11 @@
 package com.raserad.voicer.di
 
 import android.app.Activity
-import android.util.Log
 import com.raserad.voicer.presentation.Router
 
 object AppDI {
 
+    private var repositoryDI: RepositoryDI? = null
     private var router: Router? = null
 
     fun start(activity: Activity) {
@@ -13,16 +13,24 @@ object AppDI {
             (router as RouterDI).activity = activity
             return
         }
-        Log.d("STARTING", "okay")
-        val repositoryDI = RepositoryDI()
-        val interactorDI = InteractorDI(repositoryDI)
-        val presenterDI = PresenterDI(interactorDI)
-        router = RouterDI(activity, presenterDI)
 
+        router = RouterDI(activity)
         router?.start()
     }
 
     fun finish() {
         router = null
+    }
+
+    fun getRouter(): Router {
+        return router!!
+    }
+
+    fun getPresenterDI(): PresenterDI {
+        if(repositoryDI == null) {
+            repositoryDI = RepositoryDI()
+        }
+        val interactorDI = InteractorDI(repositoryDI!!)
+        return PresenterDI(interactorDI)
     }
 }

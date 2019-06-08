@@ -2,7 +2,7 @@ package com.raserad.voicer
 
 import android.app.Application
 import android.content.Context
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg
+import com.github.piasy.audio_mixer.AudioMixer
 import io.realm.Realm
 import io.realm.Realm.setDefaultConfiguration
 import io.realm.RealmConfiguration
@@ -17,7 +17,7 @@ class App: Application() {
         val config = RealmConfiguration.Builder().name("voicer.realm").build()
         setDefaultConfiguration(config)
 
-        FFmpeg.getInstance(this).loadBinary(null)
+        AudioMixer.globalInitialize();
     }
 
     companion object {
