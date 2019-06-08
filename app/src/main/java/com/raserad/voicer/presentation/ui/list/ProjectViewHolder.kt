@@ -26,18 +26,6 @@ class ProjectViewHolder(private val view: View, private val projectActionListene
         view.titleView.text = project.title
         view.descriptionView.text = project.description
 
-        if(project.preview != null) {
-            view.imageView.setImageBitmap(project.preview)
-        }
-        else {
-            Thread(Runnable {
-                val bitmap = ThumbnailUtils.createVideoThumbnail(project.video, MediaStore.Images.Thumbnails.MINI_KIND)
-
-                (view.context as Activity).runOnUiThread{
-                    project.preview = bitmap
-                    view.imageView.setImageBitmap(project.preview)
-                }
-            }).start()
-        }
+        view.imageView.setImageBitmap(project.preview)
     }
 }

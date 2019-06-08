@@ -16,7 +16,7 @@ class RouterDI(var activity: Activity): Router {
 
     override fun start() {
 
-        AppDI.getPresenterDI().getStart().onStart()
+        AppDI.getPresenterDI().getRemovedKeeper().keepRemoved()
 
         showProjectList()
     }

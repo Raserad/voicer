@@ -16,7 +16,7 @@ interface ProjectEditorView: MvpView {
     fun playVideo(isPlaying: Boolean)
 
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun showVideo(video: ReleaseVideo)
+    fun showVideo(video: String)
 
     @StateStrategyType(AddToEndSingleStrategy::class)
     fun showRecordList(list: MutableList<SoundRecord>)
@@ -38,4 +38,7 @@ interface ProjectEditorView: MvpView {
 
     @StateStrategyType(AddToEndSingleStrategy::class)
     fun showRecordingFinish()
+
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showVideoGeneratingProgress(isShow: Boolean)
 }

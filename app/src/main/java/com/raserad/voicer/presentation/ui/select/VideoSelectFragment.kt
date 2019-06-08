@@ -1,12 +1,16 @@
 package com.raserad.voicer.presentation.ui.select
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.media.ThumbnailUtils
 import android.net.Uri
 import android.net.Uri.fromParts
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.LayoutInflater
 import android.view.View
@@ -24,9 +28,14 @@ import com.raserad.voicer.domain.video.entities.Video
 import com.raserad.voicer.presentation.mvp.select.VideoSelectPresenter
 import com.raserad.voicer.presentation.mvp.select.VideoSelectView
 import com.raserad.voicer.presentation.ui.select.entities.VideoPreviewViewData
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.dialog_need_files_permission.view.cancelButton
 import kotlinx.android.synthetic.main.dialog_need_files_permission.view.okButton
 import kotlinx.android.synthetic.main.fragment_video_select.*
+import kotlinx.android.synthetic.main.view_video_item.view.*
 
 class VideoSelectFragment: MvpAppCompatFragment(), VideoSelectView {
 
@@ -139,14 +148,25 @@ class VideoSelectFragment: MvpAppCompatFragment(), VideoSelectView {
 
     override fun showVideoList(list: List<Video>) {
         val videoPreviewList: MutableList<VideoPreviewViewData> = ArrayList()
+        var counter = 0
         list.forEach {video ->
-            videoPreviewList.add(
-                VideoPreviewViewData(
-                    video.path,
-                    false,
-                    null
-                )
-            )
+            val videoViewData = VideoPreviewViewData(video.path, false, null)
+            videoPreviewList.add(videoViewData)
+
+            val position = counter
+            Observable.create<Boolean> {oberver ->
+                val bitmap = ThumbnailUtils.createVideoThumbnail(video.path, MediaStore.Images.Thumbnails.MINI_KIND)
+                videoViewData.preview = bitmap
+
+                oberver.onNext(true)
+            }
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnNext {
+                videoListAdapter.notifyItemChanged(position)
+            }
+            .subscribe()
+            counter++
         }
         videoListAdapter.list = videoPreviewList
         videoListAdapter.notifyDataSetChanged()

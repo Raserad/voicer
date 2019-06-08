@@ -7,34 +7,34 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.MvpAppCompatFragment
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.raserad.voicer.App
 import com.raserad.voicer.R
 import com.raserad.voicer.di.AppDI
 import com.raserad.voicer.domain.sound.entities.SoundRecord
-import com.raserad.voicer.domain.video.release.entities.ReleaseVideo
 import com.raserad.voicer.presentation.mvp.editor.ProjectEditorPresenter
 import com.raserad.voicer.presentation.mvp.editor.ProjectEditorView
 import com.raserad.voicer.presentation.ui.editor.entities.SoundRecordViewData
 import kotlinx.android.synthetic.main.dialog_need_audio_record_permission.view.*
 import kotlinx.android.synthetic.main.fragment_project_editor.*
+import android.R.attr.button
+import android.view.*
+import android.view.animation.Animation
+import android.view.animation.AlphaAnimation
+
+
 
 class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
 
     private val SOUND_RECORD = 2
 
     private val recordListAdapter = RecordListAdapter()
-
-    private var recordRemoveSnackbar: Snackbar? = null
 
     @InjectPresenter
     lateinit var presenter: ProjectEditorPresenter
@@ -158,7 +158,30 @@ class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
     }
 
     override fun showSoundRecordMessage(isShow: Boolean) {
-        soundRecordMessage.visibility = if(isShow) View.VISIBLE else View.GONE
+        if(isShow) {
+            if(soundRecordMessage.visibility == View.VISIBLE) return
+            val anim = AlphaAnimation(0.0f, 1.0f)
+            anim.duration = 200
+            soundRecordMessage.visibility = View.VISIBLE
+            soundRecordMessage.startAnimation(anim)
+        }
+        else {
+            if(soundRecordMessage.visibility == View.GONE) return
+            val anim = AlphaAnimation(1.0f, 0.0f)
+            anim.duration = 200
+            anim.setAnimationListener(object: Animation.AnimationListener {
+                override fun onAnimationRepeat(animation: Animation?) {}
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    soundRecordMessage.visibility = View.GONE
+                }
+
+                override fun onAnimationStart(animation: Animation?) {
+
+                }
+            })
+            soundRecordMessage.startAnimation(anim)
+        }
     }
 
     override fun playVideo(isPlaying: Boolean) {
@@ -166,8 +189,8 @@ class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
     }
 
 
-    override fun showVideo(video: ReleaseVideo) {
-        val videoUri = Uri.parse(video.path)
+    override fun showVideo(video: String) {
+        val videoUri = Uri.parse(video)
         videoPlayer.setVideoURI(videoUri)
     }
 
@@ -204,19 +227,51 @@ class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
         recordListAdapter.notifyItemChanged(position)
     }
 
+    private var recordRemoveSnackbar: Snackbar? = null
     override fun showRecordRemoveCancelAction(isShow: Boolean) {
         recordRemoveSnackbar?.dismiss()
 
-        if(isShow && view != null) {
-            recordRemoveSnackbar = Snackbar.make(view!!, R.string.sound_record_remove, Snackbar.LENGTH_INDEFINITE)
+        val view = view ?: return
+        if(isShow) {
+            recordRemoveSnackbar = Snackbar.make(view, R.string.sound_record_remove, Snackbar.LENGTH_INDEFINITE)
             recordRemoveSnackbar?.setAction(R.string.project_removed_cancel) {
                 presenter.cancelRecordRemoving()
             }
             recordRemoveSnackbar?.show()
         }
+        else {
+            recordRemoveSnackbar = null
+        }
     }
 
     override fun showRecordingFinish() {
 
+    }
+
+    override fun showVideoGeneratingProgress(isShow: Boolean) {
+        if(isShow) {
+            if(videoGenerateProgress.visibility == View.VISIBLE) return
+            val anim = AlphaAnimation(0.0f, 1.0f)
+            anim.duration = 200
+            videoGenerateProgress.visibility = View.VISIBLE
+            videoGenerateProgress.startAnimation(anim)
+        }
+        else {
+            if(videoGenerateProgress.visibility == View.GONE) return
+            val anim = AlphaAnimation(1.0f, 0.0f)
+            anim.duration = 200
+            anim.setAnimationListener(object: Animation.AnimationListener {
+                override fun onAnimationRepeat(animation: Animation?) {}
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    videoGenerateProgress.visibility = View.GONE
+                }
+
+                override fun onAnimationStart(animation: Animation?) {
+
+                }
+            })
+            videoGenerateProgress.startAnimation(anim)
+        }
     }
 }

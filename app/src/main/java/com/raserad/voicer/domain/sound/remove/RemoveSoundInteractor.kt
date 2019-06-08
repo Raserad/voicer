@@ -9,18 +9,19 @@ class RemoveSoundInteractor(
     private val removeSoundRepository: RemoveSoundRepository
 ) {
 
-    private val REMOVE_DELAY = 5
-
     fun removeFromProject(project: Project, soundRecord: SoundRecord): Observable<Unit> {
-        removeSoundRepository.removeMarked()
-        removeSoundRepository.markToRemove(project, soundRecord)
-        return Observable.timer(REMOVE_DELAY.toLong(), TimeUnit.SECONDS)
-            .map {
-                removeSoundRepository.removeMarked()
-            }
+        return removeSoundRepository.removeMarked()
+            .flatMap { removeSoundRepository.markToRemove(project, soundRecord) }
+            .flatMap { Observable.timer(REMOVE_DELAY.toLong(), TimeUnit.SECONDS) }
+            .flatMap { removeSoundRepository.removeMarked() }
+            .map {  }
     }
 
     fun cancelRemoving() = removeSoundRepository.unmarkMarked()
 
     fun removeMarked() = removeSoundRepository.removeMarked()
+
+    companion object {
+        private const val REMOVE_DELAY = 5
+    }
 }

@@ -5,16 +5,17 @@ import com.raserad.voicer.presentation.mvp.create.ProjectCreatePresenter
 import com.raserad.voicer.presentation.mvp.select.VideoSelectPresenter
 import com.raserad.voicer.presentation.mvp.editor.ProjectEditorPresenter
 import com.raserad.voicer.presentation.mvp.list.ProjectListPresenter
-import com.raserad.voicer.presentation.mvp.start.StartPresenter
+import com.raserad.voicer.presentation.mvp.keeper.RemovedKeeperPresenter
 import com.raserad.voicer.presentation.utils.SubscribeManager
 
 class PresenterDI(private val interactorDI: InteractorDI) {
 
     private fun getSubscribeManager() = SubscribeManager()
 
-    fun getStart() = StartPresenter(
+    fun getRemovedKeeper() = RemovedKeeperPresenter(
         interactorDI.getProjectRemove(),
-        interactorDI.getRemoveSound()
+        interactorDI.getRemoveSound(),
+        getSubscribeManager()
     )
 
     fun getProjectList(router: Router) = ProjectListPresenter(
@@ -46,7 +47,6 @@ class PresenterDI(private val interactorDI: InteractorDI) {
         interactorDI.getSound(),
         interactorDI.getSoundRecord(),
         interactorDI.getRemoveSound(),
-        interactorDI.getReleaseVideo(),
         interactorDI.getVideoGenerate(),
         interactorDI.getProjectSharing(),
         interactorDI.getTempProject(),

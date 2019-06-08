@@ -2,7 +2,7 @@ package com.raserad.voicer
 
 import android.app.Application
 import android.content.Context
-import com.arellomobile.mvp.RegisterMoxyReflectorPackages
+import com.github.piasy.audio_mixer.AudioMixer
 import io.realm.Realm
 import io.realm.Realm.setDefaultConfiguration
 import io.realm.RealmConfiguration
@@ -16,6 +16,8 @@ class App: Application() {
         Realm.init(this)
         val config = RealmConfiguration.Builder().name("voicer.realm").build()
         setDefaultConfiguration(config)
+
+        AudioMixer.globalInitialize();
     }
 
     companion object {

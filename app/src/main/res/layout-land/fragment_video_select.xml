@@ -68,13 +68,6 @@
             android:layout_marginTop="60dp"
             android:orientation="horizontal">
 
-        <com.raserad.videoutils.RaseradVideoTrimmer
-                android:layout_weight="1"
-                android:visibility="gone"
-                android:id="@+id/videoTrimmer"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"/>
-
         <RelativeLayout
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -97,6 +90,13 @@
                     android:textSize="24sp"
                     android:layout_centerInParent="true"/>
         </RelativeLayout>
+
+        <com.raserad.videoutils.RaseradVideoTrimmer
+                android:layout_weight="1"
+                android:visibility="gone"
+                android:id="@+id/videoTrimmer"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
 
     </LinearLayout>
 

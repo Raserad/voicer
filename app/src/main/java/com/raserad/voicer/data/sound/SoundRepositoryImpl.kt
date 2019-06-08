@@ -30,43 +30,57 @@ class SoundRepositoryImpl: SoundRepository {
 
             realm.close()
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun addToProject(project: Project, soundRecord: SoundRecord) {
-        val realm = Realm.getDefaultInstance()
+    override fun addToProject(project: Project, soundRecord: SoundRecord): Observable<SoundRecord> {
+        return Observable.create<SoundRecord> {observer ->
+            val realm = Realm.getDefaultInstance()
 
-        realm.executeTransaction {db ->
-            val recordObject = SoundRecordObject()
-            recordObject.uid = project.uid
-            recordObject.id = soundRecord.id
-            recordObject.path = soundRecord.path
-            recordObject.start = soundRecord.start
-            recordObject.end = soundRecord.end
-            recordObject.total = soundRecord.total
-            recordObject.isEnabled = soundRecord.isEnabled
-            db.insert(recordObject)
+            realm.executeTransaction {db ->
+                val recordObject = SoundRecordObject()
+                recordObject.uid = project.uid
+                recordObject.id = soundRecord.id
+                recordObject.path = soundRecord.path
+                recordObject.start = soundRecord.start
+                recordObject.end = soundRecord.end
+                recordObject.total = soundRecord.total
+                recordObject.appliedInVideo = false
+                recordObject.isEnabled = soundRecord.isEnabled
+                db.insert(recordObject)
+            }
+
+            realm.close()
+
+            observer.onNext(soundRecord)
         }
-
-        realm.close()
+        .subscribeOn(Schedulers.computation())
+        .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun enableInProject(project: Project, soundRecord: SoundRecord, isEnabled: Boolean) {
-        val realm = Realm.getDefaultInstance()
+    override fun enableInProject(project: Project, soundRecord: SoundRecord, isEnabled: Boolean): Observable<Boolean> {
+        return Observable.create<Boolean> {observer ->
+            val realm = Realm.getDefaultInstance()
 
-        realm.executeTransaction {db ->
-            val recordObject = SoundRecordObject()
-            recordObject.uid = project.uid
-            recordObject.id = soundRecord.id
-            recordObject.path = soundRecord.path
-            recordObject.start = soundRecord.start
-            recordObject.end = soundRecord.end
-            recordObject.total = soundRecord.total
-            recordObject.isEnabled = isEnabled
-            db.copyToRealmOrUpdate(recordObject)
+            realm.executeTransaction {db ->
+                val recordObject = SoundRecordObject()
+                recordObject.uid = project.uid
+                recordObject.id = soundRecord.id
+                recordObject.path = soundRecord.path
+                recordObject.start = soundRecord.start
+                recordObject.end = soundRecord.end
+                recordObject.total = soundRecord.total
+                recordObject.isEnabled = isEnabled
+                db.copyToRealmOrUpdate(recordObject)
+            }
+
+            realm.close()
+
+            observer.onNext(true)
         }
+        .subscribeOn(Schedulers.computation())
+        .observeOn(AndroidSchedulers.mainThread())
 
-        realm.close()
     }
 }

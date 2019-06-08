@@ -55,8 +55,8 @@ class ProjectListPresenter(
 
     override fun onDestroy() {
         super.onDestroy()
-        projectRemoveInteractor.removeMarked()
         subscribeManager.unsubscribeAll()
+        subscribeManager.subscribe(projectRemoveInteractor.removeMarked())
     }
 
     private fun showProjectList() {
@@ -76,9 +76,10 @@ class ProjectListPresenter(
     }
 
     fun removeProject(position: Int) {
-        removedProject = list[position]
+        subscribeManager.unsubscribe("remove_canceling")
+
+        removedProject = list.removeAt(position)
         removePosition = position
-        list.removeAt(position)
 
         view.showRemoveCancelAction(true)
 
@@ -94,19 +95,24 @@ class ProjectListPresenter(
 
     fun cancelProjectRemoving() {
         subscribeManager.unsubscribe("deleting")
-        view.showRemoveCancelAction(false)
-        projectRemoveInteractor.cancelRemoving()
 
-        list.add(removePosition, removedProject!!)
-        if(list.count() <= 1) {
-            view.showList(list)
-        }
-        else {
-            view.showProjectInsert(0, removedProject!!)
-        }
-        view.showEmpty(list.isEmpty())
+        val removeCanceling = projectRemoveInteractor.cancelRemoving()
+            .doOnNext {
+                view.showRemoveCancelAction(false)
 
-        removedProject = null
+                list.add(removePosition, removedProject!!)
+                if(list.count() <= 1) {
+                    view.showList(list)
+                }
+                else {
+                    view.showProjectInsert(removePosition, removedProject!!)
+                }
+                view.showEmpty(list.isEmpty())
+
+                removedProject = null
+            }
+
+        subscribeManager.subscribe(removeCanceling, "remove_canceling")
     }
 
     fun showProjectEditor(position: Int) {

@@ -4,7 +4,6 @@ import com.raserad.voicer.data.project.*
 import com.raserad.voicer.data.sound.RemoveSoundRepositoryImpl
 import com.raserad.voicer.data.sound.SoundRecordRepositoryImpl
 import com.raserad.voicer.data.sound.SoundRepositoryImpl
-import com.raserad.voicer.data.video.ReleaseVideoRepositoryImpl
 import com.raserad.voicer.data.video.VideoGenerateRepositoryImpl
 import com.raserad.voicer.data.video.VideoRepositoryImpl
 import com.raserad.voicer.data.video.VideoTrimRepositoryImpl
@@ -45,8 +44,6 @@ class RepositoryDI {
     fun getSoundRecord() = SoundRecordRepositoryImpl()
 
     fun getRemoveSound() = RemoveSoundRepositoryImpl()
-
-    fun getReleaseVideo() = ReleaseVideoRepositoryImpl()
 
     fun getVideoGenerate() = VideoGenerateRepositoryImpl()
 

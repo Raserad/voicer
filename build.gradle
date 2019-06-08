@@ -9,6 +9,9 @@ buildscript {
         maven {
             url "http://repository-monochromeroad.forge.cloudbees.com/release/"
         }
+        maven {
+            url  "http://dl.bintray.com/piasy/maven"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.4.1'
@@ -25,6 +28,9 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
+        maven {
+            url  "http://dl.bintray.com/piasy/maven"
+        }
     }
 }
 

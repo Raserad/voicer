@@ -1,7 +1,10 @@
 package com.raserad.voicer.presentation.ui.list
 
+import android.app.Activity
 import android.content.res.Configuration
+import android.media.ThumbnailUtils
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +20,12 @@ import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.presentation.mvp.list.ProjectListPresenter
 import com.raserad.voicer.presentation.mvp.list.ProjectListView
 import com.raserad.voicer.presentation.ui.list.entities.ProjectViewData
+import com.raserad.voicer.presentation.ui.select.entities.VideoPreviewViewData
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_project_list.*
+import kotlinx.android.synthetic.main.view_project_item.view.*
 
 class ProjectListFragment: MvpAppCompatFragment(), ProjectListView {
 
@@ -69,16 +77,44 @@ class ProjectListFragment: MvpAppCompatFragment(), ProjectListView {
     override fun showProjectInsert(position: Int, project: Project) {
         val projectViewData = ProjectViewData(project.title, project.description, project.video, null)
         projectListAdapter.list.add(position, projectViewData)
+        Observable.create<Boolean> { oberver ->
+            val bitmap = ThumbnailUtils.createVideoThumbnail(project.video, MediaStore.Images.Thumbnails.MINI_KIND)
+            projectViewData.preview = bitmap
+            oberver.onNext(true)
+        }
+        .subscribeOn(Schedulers.computation())
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext {
+            projectListAdapter.notifyItemChanged(position)
+        }
+        .subscribe()
         projectListAdapter.notifyItemInserted(position)
+        listView.scrollToPosition(position)
     }
 
     override fun showList(list: MutableList<Project>) {
         listView.visibility = if(list.isEmpty()) View.GONE else View.VISIBLE
 
         val preparedList: MutableList<ProjectViewData> = ArrayList()
+
+        var counter = 0
         list.forEach {project ->
             val projectViewData = ProjectViewData(project.title, project.description, project.video, null)
             preparedList.add(projectViewData)
+
+            val position = counter
+            Observable.create<Boolean> { oberver ->
+                val bitmap = ThumbnailUtils.createVideoThumbnail(project.video, MediaStore.Images.Thumbnails.MINI_KIND)
+                projectViewData.preview = bitmap
+                oberver.onNext(true)
+            }
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnNext {
+                projectListAdapter.notifyItemChanged(position)
+            }
+            .subscribe()
+            counter++
         }
 
         projectListAdapter.list = preparedList

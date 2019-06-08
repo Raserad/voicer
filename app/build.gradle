@@ -12,7 +12,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.raserad.voicer"
-        minSdkVersion 18
+        minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -29,6 +29,12 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
     }
 }
 
@@ -49,7 +55,10 @@ dependencies {
     kapt 'tech.schoolhelper:moxy-x-compiler:1.7.0'
     implementation 'tech.schoolhelper:moxy-x-androidx:1.7.0'
 
-    implementation 'com.spikeify:ffmpeg:0.7.3'
+    implementation 'com.googlecode.mp4parser:isoparser:1.1.22'
+    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
+
+    implementation 'com.github.piasy:AudioMixer:1.0.1'
 
     testImplementation 'junit:junit:4.13-beta-3'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

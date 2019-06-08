@@ -1,7 +1,10 @@
 package com.raserad.voicer.data.video
 
+import android.media.MediaPlayer
 import android.net.Uri
-import android.util.Log
+import com.googlecode.mp4parser.authoring.Movie
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator
 import com.raserad.videoutils.interfaces.OnTrimVideoListener
 import com.raserad.videoutils.utils.TrimVideoUtils
 import com.raserad.voicer.App
@@ -11,7 +14,12 @@ import com.raserad.voicer.domain.video.trim.VideoTrimRepository
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import io.realm.Realm
 import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 class VideoTrimRepositoryImpl: VideoTrimRepository {
 
@@ -23,13 +31,22 @@ class VideoTrimRepositoryImpl: VideoTrimRepository {
             val projectsDirectory = File(App.getContext()!!.filesDir.path + "/projects")
             projectsDirectory.mkdir()
 
-            val sourceVideo = File(trimData.path)
-
-            TrimVideoUtils.startTrim(sourceVideo, projectsDirectory.path + "/", trimData.startTime.toLong(), trimData.endTime.toLong(), object:
+            TrimVideoUtils.startTrim(File(trimData.path), projectsDirectory.path + "/", trimData.startTime, trimData.endTime, object:
                 OnTrimVideoListener {
                 override fun getResult(uri: Uri) {
                     if(uri.path != null) {
                         val video = Video(uri.path!!)
+                        val mWithVideo = MovieCreator.build(video.path)
+                        val mWOutVideo = Movie()
+                        for (track in mWithVideo.tracks) {
+                            if (track.handler == "soun") {
+                                mWOutVideo.addTrack(track)
+                            }
+                        }
+                        val b = DefaultMp4Builder()
+                        val c = b.build(mWOutVideo)
+                        c.writeContainer(FileOutputStream("${video.path}.aac").channel)
+
                         observer.onNext(video)
                     }
                 }

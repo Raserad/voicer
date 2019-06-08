@@ -235,8 +235,10 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
             mVideoView?.seekTo(0)
             mStartPosition = 0
             mEndPosition = mVideoView!!.duration
-            mRangeSeekBarView!!.setThumbValue(0, (mStartPosition * 100 / mDuration).toFloat())
-            mRangeSeekBarView!!.setThumbValue(1, (mEndPosition * 100 / mDuration).toFloat())
+            if(mDuration > 0) {
+                mRangeSeekBarView!!.setThumbValue(0, (mStartPosition * 100 / mDuration).toFloat())
+                mRangeSeekBarView!!.setThumbValue(1, (mEndPosition * 100 / mDuration).toFloat())
+            }
             mVideoView!!.setOnPreparedListener {  }
         }
     }

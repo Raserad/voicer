@@ -31,8 +31,6 @@ class RecordViewHolder(
 
         view.disabledMask.visibility = if(soundRecordViewData.isEnabled) View.GONE else View.VISIBLE
 
-        view.text.text = "total: ${soundRecordViewData.total}, start: ${soundRecordViewData.start}, end: ${soundRecordViewData.end}"
-
         view.soundTack.initTrackData(soundRecordViewData.total, soundRecordViewData.start, soundRecordViewData.end)
     }
 }
