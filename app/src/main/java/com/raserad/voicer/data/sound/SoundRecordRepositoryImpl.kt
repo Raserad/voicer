@@ -1,12 +1,17 @@
 package com.raserad.voicer.data.sound
 
+import android.media.MediaPlayer
 import android.media.MediaRecorder
+import android.net.Uri
+import android.util.Log
 import com.raserad.voicer.App
+import com.raserad.voicer.data.utils.FFmpeg
 import com.raserad.voicer.domain.sound.entities.SoundRecord
 import com.raserad.voicer.domain.sound.record.SoundRecordRepository
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import java.io.File
+
 
 class SoundRecordRepositoryImpl: SoundRecordRepository {
 
@@ -19,7 +24,7 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
     override fun startRecording(id: Int, time: Long) {
         mediaRecorder = MediaRecorder()
         mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
         mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
         mediaRecorder?.setAudioSamplingRate(16000)
 
@@ -45,6 +50,9 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
             mediaRecorder?.release()
             currentSoundRecord?.end = time
             currentSoundRecord?.total = totalTime
+
+//            addRecordOffset(currentSoundRecord!!)
+
         } catch (stopException: RuntimeException) {
             val soundFile = File(currentSoundRecord?.path)
             soundFile.delete()
@@ -67,5 +75,31 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
 
     override fun getRecordingListener(): Observable<SoundRecord> {
         return recordingListener
+    }
+
+    private fun addRecordOffset(soundRecord: SoundRecord) {
+        val source = File(soundRecord.path)
+        val tempFile = File(source.path + "_temp.aac")
+        source.copyTo(tempFile, true)
+
+        FFmpeg.execute("-y f lavfi -i sine=f=220:b=4:d=5 -c:a libvorbis ${source.path}silence.aac", {
+            FFmpeg.execute("-y -f concat -i ${source.path}silence.aac -i ${tempFile.path} ${source.path}", {
+                Log.d("FFMPEG", "callback")
+                tempFile.delete()
+
+                val mp = MediaPlayer()
+                try {
+                    mp.setDataSource(App.getContext()!!,Uri.parse(source.path))
+                    mp.prepare()
+                    mp.start()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }, {
+                Log.d("FFMPEG", it)
+            })
+        }, {
+            Log.d("FFMPEG", it)
+        })
     }
 }

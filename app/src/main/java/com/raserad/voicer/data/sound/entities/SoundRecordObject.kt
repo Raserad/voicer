@@ -10,6 +10,6 @@ open class SoundRecordObject: RealmObject() {
     var start = 0L
     var end = 0L
     var total = 0L
-    var appliedInVideo = false
+    var appliedInVideo = true
     var isEnabled = false
 }
