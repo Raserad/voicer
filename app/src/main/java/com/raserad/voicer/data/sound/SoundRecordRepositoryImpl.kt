@@ -24,7 +24,7 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
     override fun startRecording(id: Int, time: Long) {
         mediaRecorder = MediaRecorder()
         mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
         mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
         mediaRecorder?.setAudioSamplingRate(16000)
 
@@ -50,9 +50,12 @@ class SoundRecordRepositoryImpl: SoundRecordRepository {
             mediaRecorder?.release()
             currentSoundRecord?.end = time
             currentSoundRecord?.total = totalTime
+<<<<<<< HEAD
 
 //            addRecordOffset(currentSoundRecord!!)
 
+=======
+>>>>>>> 55fdb3127cd560e4470c52322e1e45455a9530b7
         } catch (stopException: RuntimeException) {
             val soundFile = File(currentSoundRecord?.path)
             soundFile.delete()

@@ -46,7 +46,11 @@ class SoundRepositoryImpl: SoundRepository {
                 recordObject.start = soundRecord.start
                 recordObject.end = soundRecord.end
                 recordObject.total = soundRecord.total
+<<<<<<< HEAD
                 recordObject.appliedInVideo = true
+=======
+                recordObject.appliedInVideo = false
+>>>>>>> 55fdb3127cd560e4470c52322e1e45455a9530b7
                 recordObject.isEnabled = soundRecord.isEnabled
                 db.insert(recordObject)
             }

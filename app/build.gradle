@@ -56,7 +56,10 @@ dependencies {
     implementation 'tech.schoolhelper:moxy-x-androidx:1.7.0'
 
     implementation 'com.googlecode.mp4parser:isoparser:1.1.22'
+<<<<<<< HEAD
 
+=======
+>>>>>>> 55fdb3127cd560e4470c52322e1e45455a9530b7
     implementation 'com.writingminds:FFmpegAndroid:0.3.2'
 
     implementation 'com.github.piasy:AudioMixer:1.0.1'
