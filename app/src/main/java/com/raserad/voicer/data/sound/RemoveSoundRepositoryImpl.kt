@@ -65,15 +65,6 @@ class RemoveSoundRepositoryImpl: RemoveSoundRepository {
                 }
 
                 results.deleteAllFromRealm()
-
-                val records = db.where(SoundRecordObject::class.java).equalTo("appliedInVideo", false).findAll()
-
-                records.forEach {record ->
-                    val soundFile = File(record.path)
-                    soundFile.delete()
-                }
-
-                records.deleteAllFromRealm()
             }
 
             realm.close()

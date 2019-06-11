@@ -1,6 +1,5 @@
 package com.raserad.voicer.data.video
 
-import android.media.MediaPlayer
 import android.net.Uri
 import com.googlecode.mp4parser.authoring.Movie
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder
@@ -14,12 +13,8 @@ import com.raserad.voicer.domain.video.trim.VideoTrimRepository
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import io.realm.Realm
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
-
 
 class VideoTrimRepositoryImpl: VideoTrimRepository {
 
