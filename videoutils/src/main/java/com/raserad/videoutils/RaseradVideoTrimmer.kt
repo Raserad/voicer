@@ -132,7 +132,7 @@ class RaseradVideoTrimmer @JvmOverloads constructor(context: Context, attrs: Att
     @SuppressLint("ClickableViewAccessibility")
     private fun init(context: Context) {
 
-        LayoutInflater.from(context).inflate(R.layout.video_trimmer_view, this, true)
+        LayoutInflater.from(context).inflate(R.layout.view_video_trimmer, this, true)
 
         mHolderTopView = findViewById(R.id.handlerTop)
         val progressVideoView = findViewById<ProgressBarView>(R.id.timeVideoView)

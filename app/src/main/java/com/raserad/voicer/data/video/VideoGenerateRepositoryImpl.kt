@@ -39,8 +39,6 @@ class VideoGenerateRepositoryImpl: VideoGenerateRepository {
                 command += " -i ${record.path}"
             }
 
-//            command += " -filter_complex amix=inputs=${records.count() + 1}:duration=first:dropout_transition=${records.count() + 1};[1]adelay=5|5 ${project.video}_temp.aac"
-
             command += " -filter_complex "
 
             var i = 1
@@ -66,7 +64,9 @@ class VideoGenerateRepositoryImpl: VideoGenerateRepository {
 
             Log.d("RESUL_COMMAND", command)
             FFmpeg.execute(command, {
-                FFmpeg.execute("-y -i ${tempVideo.path} -i ${project.video}_temp.aac -map 0:v:0 -map 1:a:0 -vcodec copy -r 30 -b:v 2100k -acodec aac -strict experimental -b:a 48k -ar 44100 ${source.path}", {
+                FFmpeg.execute("-y -i ${tempVideo.path} -i ${project.video}_temp.aac -map 0:v:0 -map 1:a:0 " +
+                        "-vcodec copy -r 30 -b:v 2100k -acodec aac -strict experimental " +
+                        "-b:a 48k -ar 44100 ${source.path}", {
                     observer.onNext(true)
                     tempVideo.delete()
                 }, {

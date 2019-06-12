@@ -28,8 +28,6 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AlphaAnimation
 
-
-
 class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
 
     private val SOUND_RECORD = 2

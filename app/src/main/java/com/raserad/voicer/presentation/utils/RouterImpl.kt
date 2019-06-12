@@ -1,16 +1,17 @@
-package com.raserad.voicer.di
+package com.raserad.voicer.presentation.utils
 
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import com.raserad.voicer.R
+import com.raserad.voicer.di.AppDI
 import com.raserad.voicer.presentation.Router
 import com.raserad.voicer.presentation.ui.create.ProjectCreateDialog
 import com.raserad.voicer.presentation.ui.select.VideoSelectFragment
 import com.raserad.voicer.presentation.ui.editor.ProjectEditorFragment
 import com.raserad.voicer.presentation.ui.list.ProjectListFragment
 
-class RouterDI(var activity: Activity): Router {
+class RouterImpl(var activity: Activity): Router {
 
     private fun fragmentManager() = (activity as AppCompatActivity).supportFragmentManager
 

@@ -1,6 +1,5 @@
 package com.raserad.voicer.presentation.ui.list
 
-import android.app.Activity
 import android.content.res.Configuration
 import android.media.ThumbnailUtils
 import android.os.Bundle
@@ -20,12 +19,10 @@ import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.presentation.mvp.list.ProjectListPresenter
 import com.raserad.voicer.presentation.mvp.list.ProjectListView
 import com.raserad.voicer.presentation.ui.list.entities.ProjectViewData
-import com.raserad.voicer.presentation.ui.select.entities.VideoPreviewViewData
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_project_list.*
-import kotlinx.android.synthetic.main.view_project_item.view.*
 
 class ProjectListFragment: MvpAppCompatFragment(), ProjectListView {
 

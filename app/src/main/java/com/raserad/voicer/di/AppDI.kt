@@ -2,6 +2,7 @@ package com.raserad.voicer.di
 
 import android.app.Activity
 import com.raserad.voicer.presentation.Router
+import com.raserad.voicer.presentation.utils.RouterImpl
 
 object AppDI {
 
@@ -10,11 +11,11 @@ object AppDI {
 
     fun start(activity: Activity) {
         if (router != null) {
-            (router as RouterDI).activity = activity
+            (router as RouterImpl).activity = activity
             return
         }
 
-        router = RouterDI(activity)
+        router = RouterImpl(activity)
         router?.start()
     }
 
