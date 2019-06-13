@@ -30,7 +30,7 @@ class ProjectListRepositoryImpl: ProjectListRepository {
 
             realm.close()
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 }

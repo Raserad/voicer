@@ -1,6 +1,7 @@
 package com.raserad.voicer.data.sound
 
 import com.raserad.voicer.data.sound.entities.SoundRecordObject
+import com.raserad.voicer.data.sound.entities.SoundRecordTempObject
 import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.domain.sound.SoundRepository
 import com.raserad.voicer.domain.sound.entities.SoundRecord
@@ -8,6 +9,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
+import java.io.File
 
 class SoundRepositoryImpl: SoundRepository {
 
@@ -16,6 +18,17 @@ class SoundRepositoryImpl: SoundRepository {
             val records: MutableList<SoundRecord> = ArrayList()
 
             val realm = Realm.getDefaultInstance()
+
+            realm.executeTransaction {db ->
+                val tempObjects = db.where(SoundRecordTempObject::class.java).findAll()
+
+                tempObjects.forEach {tempObject ->
+                    val soundFile = File(tempObject.path)
+                    soundFile.delete()
+                }
+
+                tempObjects.deleteAllFromRealm()
+            }
 
             val results = realm.where(SoundRecordObject::class.java).equalTo("uid", project.uid).findAll()
 
@@ -39,7 +52,7 @@ class SoundRepositoryImpl: SoundRepository {
             val realm = Realm.getDefaultInstance()
 
             realm.executeTransaction {db ->
-                val recordObject = SoundRecordObject()
+                val recordObject = SoundRecordTempObject()
                 recordObject.uid = project.uid
                 recordObject.id = soundRecord.id
                 recordObject.path = soundRecord.path
@@ -54,7 +67,7 @@ class SoundRepositoryImpl: SoundRepository {
 
             observer.onNext(soundRecord)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 
@@ -63,7 +76,7 @@ class SoundRepositoryImpl: SoundRepository {
             val realm = Realm.getDefaultInstance()
 
             realm.executeTransaction {db ->
-                val recordObject = SoundRecordObject()
+                val recordObject = SoundRecordTempObject()
                 recordObject.uid = project.uid
                 recordObject.id = soundRecord.id
                 recordObject.path = soundRecord.path
@@ -78,8 +91,7 @@ class SoundRepositoryImpl: SoundRepository {
 
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-
     }
 }

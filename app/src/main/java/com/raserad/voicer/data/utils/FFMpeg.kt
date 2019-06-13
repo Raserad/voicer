@@ -14,6 +14,7 @@ object FFmpeg {
             override fun onFinish() {}
 
             override fun onSuccess() {
+                ffmpeg.killRunningProcesses()
                 ffmpeg.execute(command.split(" ").toTypedArray(), object : FFmpegExecuteResponseHandler {
                     override fun onFinish() {}
 

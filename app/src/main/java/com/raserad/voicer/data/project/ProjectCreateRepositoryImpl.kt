@@ -26,7 +26,7 @@ class ProjectCreateRepositoryImpl: ProjectCreateRepository {
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 }

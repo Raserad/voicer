@@ -128,7 +128,7 @@ class TimeLineView @JvmOverloads constructor(context: Context, attrs: AttributeS
             }
             mediaMetadataRetriever.release()
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext {bitmap ->
             mBitmapList.add(bitmap)

@@ -2,6 +2,8 @@ package com.raserad.voicer.data.sound
 
 import com.raserad.voicer.data.sound.entities.SoundRecordObject
 import com.raserad.voicer.data.sound.entities.SoundRecordRemoveObject
+import com.raserad.voicer.data.sound.entities.SoundRecordRemoveTempObject
+import com.raserad.voicer.data.sound.entities.SoundRecordTempObject
 import com.raserad.voicer.domain.project.entities.Project
 import com.raserad.voicer.domain.sound.entities.SoundRecord
 import com.raserad.voicer.domain.sound.remove.RemoveSoundRepository
@@ -17,16 +19,16 @@ class RemoveSoundRepositoryImpl: RemoveSoundRepository {
             val realm = Realm.getDefaultInstance()
 
             realm.executeTransaction {db ->
-                val removeObject = SoundRecordRemoveObject()
+                val removeObject = SoundRecordRemoveTempObject()
                 removeObject.uid = project.uid
                 removeObject.id = soundRecord.id
-                db.insert(removeObject)
+                db.copyToRealmOrUpdate(removeObject)
             }
 
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 
@@ -35,14 +37,14 @@ class RemoveSoundRepositoryImpl: RemoveSoundRepository {
             val realm = Realm.getDefaultInstance()
 
             realm.executeTransaction {db ->
-                val results = db.where(SoundRecordRemoveObject::class.java).findAll()
+                val results = db.where(SoundRecordRemoveTempObject::class.java).findAll()
                 results.deleteAllFromRealm()
             }
 
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
 
     }
@@ -52,8 +54,9 @@ class RemoveSoundRepositoryImpl: RemoveSoundRepository {
             val realm = Realm.getDefaultInstance()
 
             realm.executeTransaction {db ->
-                val results = db.where(SoundRecordRemoveObject::class.java).findAll()
-                results.forEach {recordRemove ->
+                val removeObjects = db.where(SoundRecordRemoveObject::class.java).findAll()
+
+                removeObjects.forEach {recordRemove ->
                     val records = db.where(SoundRecordObject::class.java).equalTo("uid", recordRemove.uid).and().equalTo("id", recordRemove.id).findAll()
 
                     records.forEach {record ->
@@ -64,13 +67,15 @@ class RemoveSoundRepositoryImpl: RemoveSoundRepository {
                     records.deleteAllFromRealm()
                 }
 
-                results.deleteAllFromRealm()
+                removeObjects.deleteAllFromRealm()
+
+                db.where(SoundRecordTempObject::class.java).findAll().deleteAllFromRealm()
             }
 
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 }

@@ -1,10 +1,9 @@
 package com.raserad.voicer.presentation.mvp.editor
 
-import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.arellomobile.mvp.MvpPresenter
-import com.raserad.voicer.domain.project.share.ProjectSharingInteractor
 import com.raserad.voicer.domain.project.broadcast.ProjectBroadcastInteractor
+import com.raserad.voicer.domain.project.share.ProjectSharingInteractor
 import com.raserad.voicer.domain.sound.SoundInteractor
 import com.raserad.voicer.domain.sound.entities.SoundRecord
 import com.raserad.voicer.domain.sound.record.SoundRecordInteractor
@@ -12,6 +11,8 @@ import com.raserad.voicer.domain.sound.remove.RemoveSoundInteractor
 import com.raserad.voicer.domain.video.generate.VideoGenerateInteractor
 import com.raserad.voicer.presentation.Router
 import com.raserad.voicer.presentation.utils.SubscribeManager
+import io.reactivex.Observable
+import java.util.concurrent.TimeUnit
 
 @InjectViewState
 class ProjectEditorPresenter(
@@ -52,8 +53,6 @@ class ProjectEditorPresenter(
                     view.showRecordInsert(0, soundRecord)
                 }
                 view.showRecordsEmpty(false)
-
-                view.showRecordingFinish()
             }
             .doOnNext { generateVideo() }
 
@@ -98,13 +97,14 @@ class ProjectEditorPresenter(
         removedRecord = recordList.removeAt(position)
         removedRecordPosition = position
 
-        generateVideo()
-
         view.showRecordRemoveCancelAction(true)
         view.showRecordRemove(position)
         view.showRecordsEmpty(recordList.isEmpty())
 
         val recordRemoving = removeSoundInteractor.removeFromProject(project, removedRecord!!)
+            .doOnNext { generateVideo() }
+            .flatMap { Observable.timer(5, TimeUnit.SECONDS) }
+            .flatMap { removeSoundInteractor.removeMarked() }
             .doOnNext{
                 view.showRecordRemoveCancelAction(false)
             }
@@ -127,7 +127,8 @@ class ProjectEditorPresenter(
                 }
                 view.showRecordsEmpty(recordList.isEmpty())
 
-                generateVideo()
+                view.showVideoGeneratingProgress(false)
+                subscribeManager.unsubscribe("video_generating")
 
                 removedRecord = null
             }
@@ -157,16 +158,24 @@ class ProjectEditorPresenter(
         router.back()
     }
 
+    private var videoTime = 0L
+    private var isVideoPlaying = false
+    fun rememberVideoState(time: Long, isPlaying: Boolean) {
+        videoTime = time
+        isVideoPlaying = isPlaying
+    }
+
     private fun generateVideo() {
 
         val project = project ?: return
 
         view.showVideoGeneratingProgress(true)
+        view.pauseVideo()
 
         val videoGenerating = videoGenerateInteractor.generateVideo(project)
             .doOnNext {
+                view.showVideo(project.video, videoTime, isVideoPlaying)
                 view.showVideoGeneratingProgress(false)
-                view.showRecordingFinish()
             }
 
         subscribeManager.subscribe(videoGenerating, "video_generating")

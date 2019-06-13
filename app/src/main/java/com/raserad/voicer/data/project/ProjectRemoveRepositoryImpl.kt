@@ -25,7 +25,7 @@ class ProjectRemoveRepositoryImpl: ProjectRemoveRepository {
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 
@@ -40,7 +40,7 @@ class ProjectRemoveRepositoryImpl: ProjectRemoveRepository {
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 
@@ -79,7 +79,7 @@ class ProjectRemoveRepositoryImpl: ProjectRemoveRepository {
             realm.close()
             observer.onNext(true)
         }
-        .subscribeOn(Schedulers.computation())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
     }
 }

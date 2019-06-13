@@ -12,16 +12,10 @@ class RemoveSoundInteractor(
     fun removeFromProject(project: Project, soundRecord: SoundRecord): Observable<Unit> {
         return removeSoundRepository.removeMarked()
             .flatMap { removeSoundRepository.markToRemove(project, soundRecord) }
-            .flatMap { Observable.timer(REMOVE_DELAY.toLong(), TimeUnit.SECONDS) }
-            .flatMap { removeSoundRepository.removeMarked() }
             .map {  }
     }
 
     fun cancelRemoving() = removeSoundRepository.unmarkMarked()
 
     fun removeMarked() = removeSoundRepository.removeMarked()
-
-    companion object {
-        private const val REMOVE_DELAY = 5
-    }
 }

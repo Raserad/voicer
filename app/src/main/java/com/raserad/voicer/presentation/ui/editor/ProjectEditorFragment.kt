@@ -242,8 +242,16 @@ class ProjectEditorFragment: MvpAppCompatFragment(), ProjectEditorView {
         }
     }
 
-    override fun showRecordingFinish() {
+    override fun pauseVideo() {
+        videoPlayer.pause()
+        val time = videoPlayer.currentTime()
+        val isPlaying = videoPlayer.isPlaying()
+        presenter.rememberVideoState(time, isPlaying)
+    }
 
+    override fun showVideo(path: String, time: Long, isPlaying: Boolean) {
+        videoPlayer.setVideoURI(Uri.parse(path))
+        videoPlayer.setPlayingState(path, time, isPlaying)
     }
 
     override fun showVideoGeneratingProgress(isShow: Boolean) {

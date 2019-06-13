@@ -37,8 +37,11 @@ interface ProjectEditorView: MvpView {
     fun showRecordRemoveCancelAction(isShow: Boolean)
 
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun showRecordingFinish()
-
-    @StateStrategyType(AddToEndSingleStrategy::class)
     fun showVideoGeneratingProgress(isShow: Boolean)
+
+    @StateStrategyType(SkipStrategy::class)
+    fun pauseVideo()
+
+    @StateStrategyType(SkipStrategy::class)
+    fun showVideo(path: String, time: Long, isPlaying: Boolean)
 }

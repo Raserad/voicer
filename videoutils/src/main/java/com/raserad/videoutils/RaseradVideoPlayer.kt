@@ -204,17 +204,15 @@ class RaseradVideoPlayer @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     fun setVideoURI(videoURI: Uri) {
-        if(mSrc != null) {
-            if(mSrc!!.path == videoURI.path) {
-                return
-            }
-        }
+        val isTimeLine = mSrc == null
         mSrc = videoURI
 
         mVideoView!!.setVideoURI(mSrc)
         mVideoView!!.requestFocus()
 
-        mTimeLineView!!.setVideo(mSrc!!)
+        if(isTimeLine) {
+            mTimeLineView!!.setVideo(mSrc!!)
+        }
 
         mVideoView?.setOnPreparedListener {
             preparePlayer()
